@@ -6,7 +6,9 @@ Using the pyqtgraph and ,starting with one or two for examples
 to Demonstrates the structure .
 
 """
-
+###################
+# TODO: 1, start before open/or after closed , returned data format
+#
 import time
 import datetime
 import threading
@@ -24,7 +26,7 @@ import os
 # initiating the sched module scheduler
 #
 
-global MarketCloseTime
+# global MarketCloseTime
 # stockCodeList = ["300251", "300070", "002594",
 #                        "002415", "002349", "600869", "601336", "601727"]
 
@@ -105,9 +107,7 @@ class RetrieveOnLine:
         if not oneline:
             print("Previous getting url sinaHq Errors! ,return 0 ,do nothing!!")
             return 0  #  will me ??
-        # self.datalines.append([name] + oneline)
         self.SegmentData.append([name] + oneline)  # also store into sqlite3
-        # self.lines = kkkkkkkk
         timepoint = time.localtime()
         # about to remove every 5 minutes to save and clear
         if timepoint.tm_min % 5 == 0:
@@ -115,24 +115,22 @@ class RetrieveOnLine:
             self.SaveRec2db()
 
 
-    # def appendLineData(self):
-        # """actually update the newly retrieved data , merge into the tail , for
-        # the painting process to use animating the real time lines """
-        # for datline in self.lines:
-            # stock_name, timestamp = datline[0],  " ".join(datline[30:])
-            # bidding_details = ', '.join(str(x) for x in datline[1:30])
-            # print("the data line ==>", datline)
-        # SegmentData = []
-
 
     def realtimeDataTracking(self):
-        """ tracking all the stocks in List ,and retrieve data and store and analysis """
+        """ From the time of Open Market to Closed time , perform
+        the Threading ,and scheduled tracking all the stocks
+        in List ,and retrieve data and store and analysis """
+
         start = time.time()
         print(('START:', time.ctime(start)))
+        # Below code should be observed if duetime past ,should executed immediately
+        workAmTime = DueTime(9, 30)
+        workPmTime = DueTime(13, 00)
         j = 0  # delay counter
         for stockcode in self.stocklist:  # improving below
-            stockname = "sh" + \
-                stockcode if stockcode[:2] == "60" else "sz" + stockcode
+            # stockname = "sh" + \
+                # stockcode if stockcode[:2] == "60" else "sz" + stockcode
+            #before the Market open ,scheduled the inqury tasks
             self._sched.enterabs(workAmTime + 40 * j, 1, self.perform, (stockname,))
             self._sched.enterabs(workPmTime + 40 * j, 1, self.perform, (stockname,))
             j += 1
@@ -144,7 +142,7 @@ class RetrieveOnLine:
 
 
     def getStockData(self,stockCode):
-        """open service url get real time stock pricing
+        """open stock data provider  url get real time stock pricing/bidding
         but delays exist """
         import time
         # for testing and generating
@@ -155,7 +153,7 @@ class RetrieveOnLine:
         while True:  # if IOError wait 30seconds to retry
             try:
                 begin_t = time.time()
-                print(HqString)
+                # print(HqString)
                 hqList = urlopen(HqString).read()
                 consume_t = time.time() - begin_t
                 # print "getting from remote hq.sina,consumes %f seconds....." % consume_t
@@ -167,7 +165,7 @@ class RetrieveOnLine:
 
         hqList = str(hqList)
         hqList = hqList.split(',')
-        print("====retrieved Hq from sina ,the length ===>", hqList)
+        # print("====retrieved Hq from sina ,the length ===>", hqList)
         if len(hqList) != 33:
             print("Length Error != 33 Hqlist is invalid!!!!!!!!!!! return 0  \n")
             print("Error List contains===>", hqList)
@@ -177,9 +175,11 @@ class RetrieveOnLine:
                                       hqList[31].split('"')[0]
         tmpHigh,tmpLow, tmpVol ,tmpMoney =  hqList[4], hqList[5],\
                                             hqList[8] , hqList[9]
+        #only interest in price and vol , Biddings not used
         now_price = float(hqList[3])
         now_vol =  float(tmpVol)
-        stkcode = stockCode[-6:]
+        # stkcode = stockCode[-6:]
+        stkcode = stockCode
         indx = self.stocklist.index(stkcode)  #list index by stock name
         assert self.datalines[indx]["name"] ==  stkcode
         self.datalines[indx]["price"].append(now_price)
@@ -196,7 +196,7 @@ class RetrieveOnLine:
         for datline in self.SegmentData:
             stock, timestamp = datline[0],  " ".join(datline[30:])
             details = ', '.join(str(x) for x in datline[1:30])
-            print("the data line ==>", datline)
+            # print("the data line ==>", datline)
             # stock, details, timestamp = datline[0], " ".join(datline[1]), " ".join(datline[2])
             vals = [stock, details, timestamp]
             print("Values to save to sqlite!!==>", vals)
@@ -210,13 +210,13 @@ class RetrieveOnLine:
 
 
 if __name__ == "__main__":
-    MarketCloseTime = DueTime(15, 00)
+    # MarketCloseTime = DueTime(15, 00)
     # Below code should be observed if duetime past ,should executed immediately
-    workAmTime = DueTime(9, 30)
-    workPmTime = DueTime(13, 00)
+    # workAmTime = DueTime(9, 30)
+    # workPmTime = DueTime(13, 00)
     now = datetime.datetime.now()
     print(str(now))
-    stlist = ["300474","002049"]
+    stlist = ["sz300474","sz002049"]
     test_re = RetrieveOnLine(stlist, 30)
     test_re.realtimeDataTracking()
     print(test_re.datalines)
