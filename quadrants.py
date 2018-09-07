@@ -1,11 +1,14 @@
 
 # -*- coding: utf-8 -*-
 """
-This example demonstrates many of the 2D plotting capabilities
+This example demonstrates quadrants plotting pricing/vol line capabilities
 in pyqtgraph. All of the plots may be panned/scaled by dragging with
 the left/right mouse buttons. Right click on any plot to show a context menu.
 """
 
+## TODO in each quadrants draw both pricing and volumn
+## if possible ,try to plotting the bidding distribution along the
+## Y axis/pricing axis
 import numpy as np
 import datetime
 import time

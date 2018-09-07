@@ -12,7 +12,7 @@ import pyqtgraph as pg
 from pyqtgraph.Qt import QtGui, QtCore
 from pyqtgraph.Point import Point
 import pickle
-from realtimeline import RetrieveOnLine, DueTime
+from realtimeline import RetrieveOnLine, DueTime, AtTransactionTime
 
 # Below code should be observed if duetime past ,should executed immediately
 now = datetime.datetime.now()
@@ -72,6 +72,10 @@ p0.plot(data0, pen="y")
 
 p2.plot(data1, pen="w")
 
+# initializing the
+stockline0 = data1
+stockline1 = data2
+
 def update():
     global stock_curve1,  stock_curve2
     if AtTransactionTime() ==  "after":
@@ -93,7 +97,7 @@ def update():
         print(line_data["price"])
         exec("curve{}.setData(line_data['price'])".format(i))
         #stockline 1 ,2 save the data set
-        exec("stockline{} == line_data['price'])".format(i))
+        exec("stockline{} = line_data['price']".format(i))
         # stock_curve0.setData(line_data["price"])
         # stock_curve1.setData(old_line["price"])
         # old_line = line_data
@@ -131,7 +135,7 @@ def mouseMoved(evt):
             label.setText("<span style='font-size: 12pt'>x=%0.1f, \
                           <span style='color: red'>y1=%0.1f</span>, \
                           <span style='color: green'>y2=%0.1f</span>"\
-                          % (mousePoint.x(), stockline1[index], stockline2[index]))
+                          % (mousePoint.x(), stockline0[index], stockline1[index]))
         vLine.setPos(mousePoint.x())
         hLine.setPos(mousePoint.y())
 
