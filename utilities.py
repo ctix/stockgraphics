@@ -28,7 +28,7 @@ def compute_vol(vol_data):
     pdata['vol'] at least have 2 members"""
     return vol_data[-1]-vol_data[-2]
 
-def compute_vol_fit(pre_vol, vol, base_value)
+def compute_vol_fit(pre_vol, vol, base_value):
     """scale to the previous ,and fit with the base value
         return the price fitted vol values"""
     return round(vol/pre_vol,3)*base_value

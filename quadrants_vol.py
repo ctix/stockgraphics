@@ -17,7 +17,7 @@ import pyqtgraph as pg
 from pyqtgraph.Qt import QtGui, QtCore
 from pyqtgraph.Point import Point
 import pickle
-from utilities import minMaxRange, scale_vol
+from utilities import minMaxRange, scale_vol, compute_vol
 from realtimeline import RetrieveOnLine, DueTime, AtTransactionTime
 
 # Below code should be observed if duetime past ,should executed immediately
@@ -26,10 +26,12 @@ print(str(now))
 stlist = ["sz300474","sz002049","sz000977","sz002642"]
 test_re = RetrieveOnLine(stlist, 30)
 
-global ptr, pre_data, _debug, vol_data
+global ptr, pre_data, _debug, vol_data ,pre_vol ,scaler
 pre_data = []
 _debug = False
 vol_data = []
+pre_vol = [[],[],[],[]]   ## should be [][] 2d , for eachone in 4 quadrants
+scaler = [0,0,0,0]
 
 ### pickle save /load the previous data
 # import os
@@ -106,7 +108,7 @@ for i,pdata in enumerate(test_re.datalines):
 ##
 
 def update():
-    global ptr, vol_data
+    global ptr, vol_data, pre_vol, scaler
     if not _debug and  AtTransactionTime() ==  "after":
         MarketClosed = True
         pickle.dump(test_re.datalines,stdatafile)
@@ -125,16 +127,50 @@ def update():
         if _debug:
             ptr += 1
             line_datap= line_data["price"][0:ptr]
-            voldata =  vol_data[i][0:ptr]
-            print(line_data['name'])
-            print(ptr,line_datap)
             exec("curve{}.setData(line_datap)".format(i))
-            ##ok for known whole data, but when recieved 1 by 1
-            ## must got another algorithm
-            exec("vol_curve{}.setData(voldata)".format(i))
             now_price = line_datap[-1]
             exec("p{0}.setTitle('{1}@price ={2}',pen='y')".\
                 format(i,line_data["name"],now_price))
+            ### reproduce the sequnce of the vol for previous
+            ### vol dataset all in the list, this is ok
+            # temporarily  comment while debug the realtime vol
+            # voldata =  vol_data[i][0:ptr]
+            # print(line_data['name'])
+            # print(ptr,line_datap)
+            # exec("vol_curve{}.setData(voldata)".format(i))
+            ##ok for known whole data, but when recieved 1 by 1
+            ## must got another algorithm , show below
+
+            first_price = line_data["price"][0]
+            print("fist price", first_price)
+            raw_vol = line_data['vol'][0:ptr]
+            print("raw vol data list ==>", raw_vol)
+            raw_vol_length = len(raw_vol)
+            ## the length of the fitted volume can be done by
+            ## the proportion to the previous volume value
+            if raw_vol_length == 2 :
+                real_vol = compute_vol(raw_vol)
+                if not scaler[i]:
+                    scaler[i] = round(real_vol/first_price,2)
+                # pre_vol[i].append(real_vol) # store it in its data list
+                # first fit vol
+                fit_vol = first_price - 0.4 # plotting below a little bit
+                pre_vol[i].append(fit_vol)
+            if raw_vol_length > 2 :
+                real_vol = compute_vol(raw_vol)
+                print("the scaler ====>", scaler)
+                # scaler = round(real_vol/first_price,2)
+                # pre_vol[i].append(real_vol) # store it in its data list
+                # first fit vol
+                if scaler[i] == 0:
+                    scaler[i] = round(real_vol/first_price,2)
+                    return 0
+                fit_vol = round(real_vol/scaler[i], 2)
+                pre_vol[i].append(fit_vol)
+                print("fitted vol data list ==>", pre_vol[i])
+
+            exec("vol_curve{}.setData(pre_vol[i])".format(i))
+
         else:
             test_re.getStockData(line_data["name"])
             exec("curve{}.setData(line_data['price'])".format(i))

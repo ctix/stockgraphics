@@ -3,7 +3,7 @@
 Demonstrate creation of a custom graphic (a candlestick plot)
 
 """
-# import initExample ## Add path to library (just for examples; you do not need this)
+###TODO 1 : modify and fit the pandas dataframe and  tushare daily data
 
 import pyqtgraph as pg
 from pyqtgraph import QtCore, QtGui
@@ -53,11 +53,11 @@ data = [  ## fields are (time, open, close, min, max).
     (5., 15, 9, 8, 22),
     (6., 9, 15, 8, 16),
 ]
-# read the sh index
-shdata = ts.get_hist_data('sh',start = '2018-07-15',end='2018-08-11').sort_index()
-oclh = shdata[]
+# read the sh index from the tushare module
+# shdata = ts.get_hist_data('sh',start = '2018-07-15',end='2018-08-11').sort_index()
+# oclh = shdata[]
 
-# item = CandlestickItem(data)
+item = CandlestickItem(data)
 plt = pg.plot()
 plt.addItem(item)
 plt.setWindowTitle('pyqtgraph example: customGraphicsItem')
