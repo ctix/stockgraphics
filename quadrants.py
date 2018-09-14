@@ -51,7 +51,8 @@ except FileNotFoundError:
 # pkl_file.close()
 
 #data file name for pickle dump data structure
-stdatafile = open("stdata1.pkl",'wb')
+## TODO : save the datfile named by the date created!!
+stdatafile = open("stdata914.pkl",'wb')
 
 app = QtGui.QApplication([])
 win = pg.GraphicsWindow(title="stock pricing plotting examples")
@@ -130,7 +131,7 @@ def update():
 
     for i,line_data in enumerate(test_re.datalines):
     # for i,line_data in enumerate(pre_data):
-        print(line_data["name"],line_data["price"])
+        # print(line_data["name"],line_data["price"])
         if _debug:
             ptr += 1
             line_datap= line_data["price"][0:ptr]
@@ -145,7 +146,15 @@ def update():
         else:
             test_re.getStockData(line_data["name"])
             exec("curve{}.setData(line_data['price'])".format(i))
-            exec("vol_curve{}.setData(voldata)".format(i))
+            if len(line_data['vol']) > 2 :
+                vol_data = list(np.array(line_data['vol'][1:]) \
+                                -np.array(line_data['vol'][:-1]))
+                mi, mx = min(line_data['price']),max(line_data['price'])
+                vol_data = minMaxRange(vol_data, (mi-down,mx-down))
+                print("vol_data==>{0} \n, the price max ==> {1}, min=={2}".\
+                      format(vol_data, mx,mi))
+                exec("vol_curve{}.setData(vol_data)".format(i))
+            #display the current price in the title
             now_price = line_data["price"][-1]
             exec("p{0}.setTitle('{1}@price ={2}')".\
                 format(i,line_data["name"],now_price))

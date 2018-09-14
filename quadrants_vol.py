@@ -148,28 +148,18 @@ def update():
             raw_vol_length = len(raw_vol)
             ## the length of the fitted volume can be done by
             ## the proportion to the previous volume value
-            if raw_vol_length == 2 :
-                real_vol = compute_vol(raw_vol)
-                if not scaler[i]:
-                    scaler[i] = round(real_vol/first_price,2)
-                # pre_vol[i].append(real_vol) # store it in its data list
-                # first fit vol
-                fit_vol = first_price - 0.4 # plotting below a little bit
-                pre_vol[i].append(fit_vol)
+            ## TODO :Twice think that get/apply the current volume to
+            ## the current pirce range anyway . cause it is about to fit more
+            ## when more data recieved
             if raw_vol_length > 2 :
-                real_vol = compute_vol(raw_vol)
-                print("the scaler ====>", scaler)
-                # scaler = round(real_vol/first_price,2)
-                # pre_vol[i].append(real_vol) # store it in its data list
-                # first fit vol
-                if scaler[i] == 0:
-                    scaler[i] = round(real_vol/first_price,2)
-                    return 0
-                fit_vol = round(real_vol/scaler[i], 2)
-                pre_vol[i].append(fit_vol)
-                print("fitted vol data list ==>", pre_vol[i])
-
-            exec("vol_curve{}.setData(pre_vol[i])".format(i))
+                # real_vol = compute_vol(raw_vol)
+                voldata = list(np.array(raw_vol[1:])-np.array(raw_vol[:-1]))
+                mi, mx = min(line_data['price']),max(line_data['price'])
+                print("voldata==>{0} \n, the price max ==> {1}, min=={2}".\
+                      format(voldata, mx,mi))
+                voldata = minMaxRange(voldata, (mi-down,mx-down))
+                print("fitted vol data list ==>", voldata)
+            exec("vol_curve{}.setData(voldata)".format(i))
 
         else:
             test_re.getStockData(line_data["name"])
