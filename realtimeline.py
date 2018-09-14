@@ -4,11 +4,16 @@ Demo the retrieving from stock pricing website , and
 drawing the real time pricing and volume on the fly
 Using the pyqtgraph and ,starting with one or two for examples
 to Demonstrates the structure .
-
+Fall in to 3 parts/functions 1, -- schedule the Market time to
+perfom the whole Bidding data set .
+2, Save to sqlite3  data base ,for after trail error debug
+3, Real time Tracking use to call the place order system to buy/sell
+    and long/short,  not include in this project
 """
 ###################
-# TODO: 1, start before open/or after closed , returned data format
-#
+# TODO: 1, start before open/or after closed , returned date format
+##    1.1 , the date time of every coming data set
+## 2 , the Bidding price distribution info/dataset , add to the plotting
 import time
 import datetime
 import threading
