@@ -13,6 +13,8 @@ import tushare as ts
 # read the sh index from the tushare module
 shdata = ts.get_hist_data('sh',start = '2018-08-01',end='2018-09-09').sort_index()
 
+
+## construct the candlestick required data structure
 id_col  = [i for i in range(1, shdata.shape[0]+1)]  # rows
 shdata["id"] = id_col
 
