@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
 """
 This example demonstrates quadrants plotting pricing/vol line capabilities
-in pyqtgraph. All of the plots may be panned/scaled by dragging with
-the left/right mouse buttons. Right click on any plot to show a context menu.
+in pyqtgraph.  Now the demo can show 4 stocks in quadrants with pricing and
+volume, act as a stock pricing client in linux
 """
 
 ## TODO 0  in each quadrants draw both pricing and volumn [done]
 ## if possible ,try to plotting the bidding distribution along the
 ## Y axis/pricing axis [not yet]
 ## TODO 1 , simulating the retrieving and displaying process , by
-## using the dataset pickle dumped before
+## using the dataset pickle dumped before [done], in quadrants_vol
 import numpy as np
 import datetime
 import time
@@ -26,30 +26,7 @@ print(str(now))
 stlist = ["sz300474","sz002049","sz000977","sz002642"]
 test_re = RetrieveOnLine(stlist, 30)
 
-global pre_data, _debug
-pre_data = []
 _debug = False
-
-### pickle save /load the previous data
-# import os
-filename = "stdata99.pkl"
-# if os.path.exists(filename):
-message = "previous pickled data reloaded! , try make simulations "
-try:
-    with open(filename, 'rb') as pkl_file:
-        pre_data = pickle.load(pkl_file)
-        print(message)
-        _debug = True
-except FileNotFoundError:
-    message = "Sorry ,the file " + filename + " Not Found"
-    print(message)
-# validating the pickle loaded data
-
-# for i, line in enumerate(pre_data):
-
-
-# pkl_file.close()
-
 #data file name for pickle dump data structure
 ## TODO : save the datfile named by the date created!!
 pkl_file_name = "stkpkl" + getCurrentDate()
@@ -64,10 +41,8 @@ win.setWindowTitle('pyqtgraph example: Plotting')
 pg.setConfigOptions(antialias=True)
 
 p0 = win.addPlot(title="jjw300474" )
-# curve0 = p0.plot(pre_data[0]["price"] ,pen= "r")
 p0.showGrid(x=True, y=True, alpha=0.7)
 p1 = win.addPlot(title="zggw002049")
-# curve1 = p1.plot(pre_data[1]["price"],pen = "g")
 p1.showGrid(x=True, y=True, alpha=0.7)
 
 win.nextRow()
@@ -88,11 +63,6 @@ global ptr, voldata
 voldata = []
 #merge the pickle load data to the datalines
 ## iminating the situation
-if pre_data:
-    _debug = True
-    ptr = 0   # pointer to increase 1 by 1
-    test_re.datalines = pre_data
-
 for i,pdata in enumerate(test_re.datalines):
     print("the Length of the vol list==>",len(pdata['vol']))
     if len(pdata['vol'])>2:
@@ -132,34 +102,20 @@ def update():
     # print(test_re.datalines)
 
     for i,line_data in enumerate(test_re.datalines):
-    # for i,line_data in enumerate(pre_data):
-        # print(line_data["name"],line_data["price"])
-        if _debug:
-            ptr += 1
-            line_datap= line_data["price"][0:ptr]
-            vol_data =  voldata[0:ptr]
-            print(line_data['name'])
-            print(ptr,line_datap)
-            exec("curve{}.setData(line_datap)".format(i))
+        test_re.getStockData(line_data["name"])
+        exec("curve{}.setData(line_data['price'])".format(i))
+        if len(line_data['vol']) > 2 :
+            vol_data = list(np.array(line_data['vol'][1:]) \
+                            -np.array(line_data['vol'][:-1]))
+            mi, mx = min(line_data['price']),max(line_data['price'])
+            vol_data = minMaxRange(vol_data, (mi-down,mx-down))
+            print("vol_data==>{0} \n, the price max ==> {1}, min=={2}".\
+                    format(vol_data, mx,mi))
             exec("vol_curve{}.setData(vol_data)".format(i))
-            now_price = line_data["price"][-1]
-            exec("p{0}.setTitle('{1}@price ={2}')".\
-                format(i,line_data["name"],now_price))
-        else:
-            test_re.getStockData(line_data["name"])
-            exec("curve{}.setData(line_data['price'])".format(i))
-            if len(line_data['vol']) > 2 :
-                vol_data = list(np.array(line_data['vol'][1:]) \
-                                -np.array(line_data['vol'][:-1]))
-                mi, mx = min(line_data['price']),max(line_data['price'])
-                vol_data = minMaxRange(vol_data, (mi-down,mx-down))
-                print("vol_data==>{0} \n, the price max ==> {1}, min=={2}".\
-                      format(vol_data, mx,mi))
-                exec("vol_curve{}.setData(vol_data)".format(i))
-            #display the current price in the title
-            now_price = line_data["price"][-1]
-            exec("p{0}.setTitle('{1}@price ={2}')".\
-                format(i,line_data["name"],now_price))
+        #display the current price in the title
+        now_price = line_data["price"][-1]
+        exec("p{0}.setTitle('{1}@price ={2}')".\
+            format(i,line_data["name"],now_price))
 
 timer = QtCore.QTimer()
 timer.timeout.connect(update)
