@@ -6,7 +6,9 @@ def minMaxRange(x,range_values):
                     (range_values[1] - range_values[0])+\
             range_values[0],2) for xx in x]
 
-
+import datetime
+def getCurrentDate(): 
+	return	datetime.datetime.now().strftime('%Y-%m-%d')
 
 def Compute_Vol_all(vol_data):
     """pdata['vol'] contains all the accumulative volume """
@@ -57,3 +59,9 @@ def scale_vol(pdata_vol, pdata_price,down):
     voldata = minMaxRange(voldata, (mi-down,mx-down))
     return voldata
 
+if __name__ == '__main__': 
+    name = "pkl"
+    name += getCurrentDate() 
+    print("Name is {}".format(name))
+
+    

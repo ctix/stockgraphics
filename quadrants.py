@@ -17,7 +17,7 @@ import pyqtgraph as pg
 from pyqtgraph.Qt import QtGui, QtCore
 from pyqtgraph.Point import Point
 import pickle
-from utilities import minMaxRange
+from utilities import minMaxRange, getCurrentDate
 from realtimeline import RetrieveOnLine, DueTime, AtTransactionTime
 
 # Below code should be observed if duetime past ,should executed immediately
@@ -52,7 +52,9 @@ except FileNotFoundError:
 
 #data file name for pickle dump data structure
 ## TODO : save the datfile named by the date created!!
-stdatafile = open("stdata914.pkl",'wb')
+pkl_file_name = "stkpkl" + getCurrentDate()
+print("The pickled stock data will be saved in file ==> {}".format(pkl_file_name))
+stdatafile = open(pkl_file_name,'wb')
 
 app = QtGui.QApplication([])
 win = pg.GraphicsWindow(title="stock pricing plotting examples")

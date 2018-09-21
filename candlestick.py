@@ -4,6 +4,7 @@ Demonstrate creation of a custom graphic (a candlestick plot)
 
 """
 ###TODO 1 : modify and fit the pandas dataframe and  tushare daily data
+## TODO 2 : Grid and include, integrated in the realtime graphics
 
 import pyqtgraph as pg
 from pyqtgraph import QtCore, QtGui
@@ -24,6 +25,7 @@ class CandlestickItem(pg.GraphicsObject):
         self.picture = QtGui.QPicture()
         p = QtGui.QPainter(self.picture)
         p.setPen(pg.mkPen('w'))
+        # p.showGrid(x=True, y=True, alpha=0.7)
         w = (self.data[1][0] - self.data[0][0]) / 3.
         print(self.data[1][0])
         print(self.data[0][0])
@@ -57,13 +59,13 @@ data = [  ## fields are (time, open, close, min, max).
 # shdata = ts.get_hist_data('sh',start = '2018-07-15',end='2018-08-11').sort_index()
 # oclh = shdata[]
 
-item = CandlestickItem(data)
-plt = pg.plot()
-plt.addItem(item)
-plt.setWindowTitle('pyqtgraph example: customGraphicsItem')
 
 ## Start Qt event loop unless running in interactive mode or using pyside.
 if __name__ == '__main__':
+    item = CandlestickItem(data)
+    plt = pg.plot()
+    plt.addItem(item)
+    plt.setWindowTitle('pyqtgraph example: customGraphicsItem')
     import sys
     QtGui.QApplication.instance().exec_()
 

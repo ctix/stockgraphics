@@ -11,7 +11,7 @@ import tushare as ts
 
 
 # read the sh index from the tushare module
-shdata = ts.get_hist_data('sh',start = '2018-08-01',end='2018-09-09').sort_index()
+shdata = ts.get_hist_data('sh',start = '2018-07-01',end='2018-09-09').sort_index()
 
 
 ## construct the candlestick required data structure
@@ -32,5 +32,6 @@ plt.setWindowTitle('pyqtgraph example: customGraphicsItem')
 ## Start Qt event loop unless running in interactive mode or using pyside.
 if __name__ == '__main__':
     import sys
-    QtGui.QApplication.instance().exec_()
+    # QtGui.QApplication.instance().exec_()
+    QtGui.QApplication([]).exec_()
 
