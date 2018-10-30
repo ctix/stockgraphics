@@ -2,6 +2,7 @@
 sorts of stock daily charts , real time curve graph etc , make and show the usage of pyqtgraph 
 
 
+![stock real time quadrants pix](/pix/quadrantspix.png)
 ## TASKS
 
 ### Display the bidding volume distribution along the Horizontal X axis 
