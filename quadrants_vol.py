@@ -101,7 +101,9 @@ for i,pdata in enumerate(test_re.datalines):
         vol_data.append(voldata)
 
     exec("vol_curve{0}=p{0}.plot(voldata,pen='y')".format(i))
-    exec("curve{0}=p{0}.plot(pdata['price'],pen='r',)".format(i))
+    # exec("curve{0}=p{0}.plot(pdata['price'],pen='r')".format(i))
+    mypen = pg.mkPen(color='r',width=3)
+    exec("curve{0}=p{0}.plot(pdata['price'],pen=mypen)".format(i))
 
 
 ## add the testing procedure to iminate the retrieving data

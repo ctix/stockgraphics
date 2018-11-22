@@ -23,7 +23,7 @@ from realtimeline import RetrieveOnLine, DueTime, AtTransactionTime
 # Below code should be observed if duetime past ,should executed immediately
 now = datetime.datetime.now()
 print(str(now))
-stlist = ["sz300474","sz002049","sz000977","sz002642"]
+stlist = ["sh600460","sz002389","sz300059","sz300474"]
 test_re = RetrieveOnLine(stlist, 30)
 
 _debug = False
@@ -78,7 +78,8 @@ for i,pdata in enumerate(test_re.datalines):
         voldata0 = voldata[0:1]
         pdata['price'] = pdata['price'][0:1]
     exec("vol_curve{0}=p{0}.plot(voldata,pen='y')".format(i))
-    exec("curve{0}=p{0}.plot(pdata['price'],pen='r',)".format(i))
+    mypen = pg.mkPen(color='r',width=3)
+    exec("curve{0}=p{0}.plot(pdata['price'],pen=mypen)".format(i))
 
 
 ## add the testing procedure to iminate the retrieving data
