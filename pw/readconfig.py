@@ -5,10 +5,11 @@ import configparser
 config = configparser.ConfigParser()
 config.read('stocks.ini')
 
-secs = config.sections()
-print("all sections ==>{} ".format(secs))
-a = config.options("hi-tek")
-print("options under hi-tek ==> {}".format(a))
+def test():
+    secs = config.sections()
+    print("all sections ==>{} ".format(secs))
+    a = config.options("hi-tek")
+    print("options under hi-tek ==> {}".format(a))
 
 def get_stocks(sections):
     lst = []
