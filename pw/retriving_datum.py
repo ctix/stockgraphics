@@ -22,8 +22,8 @@ import numpy as np
 from urllib.request import urlopen
 import sqlite3
 import os
-import readconfig
-import dataStruct
+import pw.readconfig
+import pw.dataStruct
 
 # from collections import namedtuple
 
@@ -103,8 +103,6 @@ class RetrieveOnLine:
                 if task.time - time.time() < 300:  # remove the am event from stack
                     self._sched.cancel(task)
                     print("scheduled latest removed by Market Close!!,clean up ready,save2db !!")
-                    #self.SaveRec2db()  #store on received!, no need for clean task
-                    # appendLineData()
             return []  # think twice no need to return
         self._sched.enter(self.interval, 0, self.perform, (name,))
         oneline = self.getStockData(name)
@@ -114,14 +112,6 @@ class RetrieveOnLine:
         ## compose the data item
         data_item = [name] + oneline
         self.pw_save(data_item)
-        #self.SegmentData.append([name] + oneline)  # also store into sqlite3
-        #timepoint = time.localtime()
-        # about to remove every 5 minutes to save and clear
-        #if timepoint.tm_min % 5 == 0:
-        #if timepoint.tm_sec % 20 == 0:
-        #    print("Time to Write to sqlite ,and empty this SegmentData Array!!!")
-        #    self.SaveRec2db()
-
 
 
     def realtimeDataTracking(self):
@@ -144,9 +134,9 @@ class RetrieveOnLine:
             j += 1
 
         print(self._sched.queue)
-        t = threading.Thread(target=self._sched.run)  #
-        t.start()  #
-        t.join()  #
+        t = threading.Thread(target=self._sched.run)
+        t.start()
+        t.join()
 
 
     def getStockData(self,stockCode):
@@ -205,36 +195,8 @@ class RetrieveOnLine:
         ## append the first to Mins table
         last_tmp = dataStruct.Mins(stock=stock, detail=details , dt=timestamp)
         save_n = last_tmp.save()
-        print("numbers to save to sqlite!!==>",save_n )
-
-
-
-    def SaveRec2db(self):
-        if len(self.SegmentData) < 1:  # nothing in Array
-            print("Warning: Nothing in the SegmentData!!")
-            return
-        #conn = sqlite3.connect('stocks.db')
-        #curs = conn.cursor()
-        #query = 'INSERT INTO Hq1min(stockname, Dealdetails, Timestamp) VALUES(?,?,?)'
-        for datline in self.SegmentData:
-            stock, timestamp = datline[0],  " ".join(datline[30:])
-            details = ', '.join(str(x) for x in datline[1:30])
-            # print("the data line ==>", datline)
-            # stock, details, timestamp = datline[0], " ".join(datline[1]), " ".join(datline[2])
-            vals = [stock, details, timestamp]
-
-            ## append the first to Mins table
-            last_tmp = dataStruct.Mins(stock=stock, detail=details , dt=timestamp)
-            last_tmp.save()
-
-            print("Values to save to sqlite!!==>", vals)
-            curs.execute(query, vals)
-        #conn.commit()
-        self.SegmentData = []
-        #conn.close()
-
-
-
+        print("the saved details ==>",details)
+        print("@{} {} numbers  to save to sqlite!!==>{}".format(timestamp,save_n,stock))
 
 
 if __name__ == "__main__":
@@ -248,8 +210,8 @@ if __name__ == "__main__":
     stlist = readconfig.get_all()
     print("ALL options will be read from URL ==> {}".format(stlist))
 
-    #test_re = RetrieveOnLine(stlist, 30)
-    #test_re.realtimeDataTracking()
+    test_re = RetrieveOnLine(stlist, 50)
+    test_re.realtimeDataTracking()
     #print(test_re.datalines)
 
 
