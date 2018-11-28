@@ -17,8 +17,10 @@ import pyqtgraph as pg
 from pyqtgraph.Qt import QtGui, QtCore
 from pyqtgraph.Point import Point
 import pickle
+import json
 from utilities import minMaxRange, getCurrentDate
-from pw.retriving_datum import RetrieveOnLine, DueTime, AtTransactionTime
+
+from urllib.request import urlopen
 
 # Below code should be observed if duetime past ,should executed immediately
 now = datetime.datetime.now()
@@ -26,12 +28,48 @@ print(str(now))
 stlist = ["sh600460","sz002389","sz300059","sz300474"]
 test_re = RetrieveOnLine(stlist, 30)
 
-_debug = False
-#data file name for pickle dump data structure
-## TODO : save the datfile named by the date created!!
-pkl_file_name = "stkpkl" + getCurrentDate()
-print("The pickled stock data will be saved in file ==> {}".format(pkl_file_name))
-stdatafile = open(pkl_file_name,'wb')
+rest_config_file = "pw/rest.ini"
+
+ip_port = "http://172.16.6.55:8000/"
+day_all_="today/"
+sanic_day_rest_api = ip_port + day_all_
+
+def get_rest_api(stock_name):
+    #sanic_rest_api = "http://172.16.6.55/hq"
+    pass
+
+
+def get_rest_pre_all(stock_name):
+    """retrieving all day biddings thru this api
+    return a list of all transactions of this stock"""
+    detail_all = urlopen(sanic_day_rest_api + stock_name).read()
+    return jason.loads(detail_all)
+
+def get_minute_datum(stock_name):
+    #read_rest_config(rest.ini)
+    pass
+
+
+def parse_per_stock(stock_name, datum):
+
+    for i,pdata in enumerate(test_re.datalines):
+        print("the Length of the vol list==>",len(pdata['vol']))
+        if len(pdata['vol'])>2:
+            voldata = list(np.array(pdata['vol'][1:])-np.array(pdata['vol'][:-1]))
+            # print(voldata[:20])
+            mi, mx = min(pdata['price']),max(pdata['price'])
+            # voldata = minMaxRange(pdata['vol'], (mi-down,mx-down))
+            voldata = minMaxRange(voldata, (mi-down,mx-down))
+            # print(voldata[:20])
+        # exec("vol_curve{0}=p{0}.plot(voldata,pen='y',brush=(200,200,233),\
+             # fillLevel=0)".format(i))
+        exec("vol_curve{0}=p{0}.plot(voldata,pen='y')".format(i))
+        mypen = pg.mkPen(color='r',width=3)
+        exec("curve{0}=p{0}.plot(pdata['price'],pen=mypen)".format(i))
+
+## save the datfile named by the date created!!
+#pkl_file_name = "stkpkl" + getCurrentDate()
+#print("The pickled stock data will be saved in file ==> {}".format(pkl_file_name))
 
 app = QtGui.QApplication([])
 win = pg.GraphicsWindow(title="stock pricing plotting examples")
@@ -59,10 +97,15 @@ print(list(enumerate(stlist)))
 # define the downwards size
 down = 0.4
 
+def plot_price_vol__curve(pdata, voldata, pos):
+    mypen = pg.mkPen(color='r',width=3)
+    exec("curve{0}=p{0}.plot(pdata['price'],pen=mypen)".format(pos))
+    exec("vol_curve{0}=p{0}.plot(voldata,pen='y')".format(pos))
+
 global ptr, voldata
 voldata = []
 #merge the pickle load data to the datalines
-## iminating the situation
+## Animating the situation
 for i,pdata in enumerate(test_re.datalines):
     print("the Length of the vol list==>",len(pdata['vol']))
     if len(pdata['vol'])>2:
@@ -74,12 +117,7 @@ for i,pdata in enumerate(test_re.datalines):
         # print(voldata[:20])
     # exec("vol_curve{0}=p{0}.plot(voldata,pen='y',brush=(200,200,233),\
          # fillLevel=0)".format(i))
-    if _debug:
-        voldata0 = voldata[0:1]
-        pdata['price'] = pdata['price'][0:1]
-    exec("vol_curve{0}=p{0}.plot(voldata,pen='y')".format(i))
-    mypen = pg.mkPen(color='r',width=3)
-    exec("curve{0}=p{0}.plot(pdata['price'],pen=mypen)".format(i))
+    plot_price_vol__curve(pdata, voldata, i)
 
 
 ## add the testing procedure to iminate the retrieving data
@@ -87,12 +125,10 @@ for i,pdata in enumerate(test_re.datalines):
 
 def update():
     global ptr, voldata
-    if not _debug and  AtTransactionTime() ==  "after":
+    if AtTransactionTime() ==  "after":
         MarketClosed = True
-        pickle.dump(test_re.datalines,stdatafile)
         time.sleep(300)
         print("Market Closed Alreedy!!!")
-        # stdatafile.close()
         return 0
     if AtTransactionTime() == "noon" :
         # sleep until 13:00,think recover Retrieving exactly on time
@@ -122,16 +158,10 @@ timer = QtCore.QTimer()
 timer.timeout.connect(update)
 # interval 29 sec to update the plotting
 # timer.start(23000)
-if _debug:
-    timer.start(3000)
-else:
-    timer.start(23000)
-# timer.start(999000)  ## not updating the plotting ,for the trial
+timer.start(23000)
 
 
 ## Start Qt event loop unless running in interactive mode or using pyside.
 if __name__ == '__main__':
     QtGui.QApplication.instance().exec_()
-    pickle.dump(test_re.datalines,stdatafile)
-    stdatafile.close()
 

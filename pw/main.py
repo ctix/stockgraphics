@@ -1,6 +1,6 @@
 # from peewee import IntegerField, TextField, CharField, DateTimeField, SqliteDatabase, Model
 from  peewee import *
-import datetime
+from datetime import datetime
 import time
 from sanic import Sanic
 from sanic.response import text,json
@@ -28,7 +28,7 @@ class Mins(BaseModel):
                #.where(
                    #(stock==name)
                    #&(dt > st_dt)
-                   #&(dt < datetime.datetime.now())
+                   #&(dt < datetime.now())
                #).limit(6))
 
 
@@ -43,12 +43,12 @@ def get_hq_dt(type):
     ## trading starting daily time
     hr,min = 9,30
     if type =='start':
-        return datetime.datetime(dt.tm_year,dt.tm_mon,dt.tm_mday,hr,min,0,0)
+        return datetime(dt.tm_year,dt.tm_mon,dt.tm_mday,hr,min,0,0)
     elif type =='now':
-        return datetime.datetime(dt.tm_year,dt.tm_mon,dt.tm_mday,
+        return datetime(dt.tm_year,dt.tm_mon,dt.tm_mday,
                 dt.tm_hour,dt.tm_min,dt.tm_sec,0)
     elif type =='1m_ago': ## only get datum of the specified stock @1minute ago
-        return datetime.datetime(dt.tm_year,dt.tm_mon,dt.tm_mday,
+        return datetime(dt.tm_year,dt.tm_mon,dt.tm_mday,
                 dt.tm_hour,dt.tm_min-1,dt.tm_sec,0)
 
 
@@ -62,9 +62,9 @@ minhq=Mins.select().where((Mins.stock == name)
                             & (Mins.dt > hq_st_dt))#.limit
 #lsthq = minhq.where(Mins.dt > hq_st_dt)
 lsthq = []
-for it in minhq:
-    print("Details ==> {}\n @time ==> {}".format(it.detail,it.dt))
-    lsthq.append([it.detail, it.dt])
+#for it in minhq:
+    #print("Details ==> {}\n @time ==> {}".format(it.detail,it.dt))
+    #lsthq.append([it.detail, it.dt])
 
 ## Jsonfy,versus  text response , had different format, don't figure out Y
 @app.route("/")
@@ -78,7 +78,7 @@ async def stock_hq_handler(request,name):
     hq_1min = get_hq_dt("1m_ago")
     result_lst = []
     minhq=Mins.select().where((Mins.stock == name)
-                            & (Mins.dt > hq_st_dt))#.limit
+                            & (Mins.dt > hq_1min))#.limit
     for it in minhq:
        result_lst.append([it.detail,it.dt])
 
@@ -90,11 +90,31 @@ async def stock_hq_handler(request,name):
     result_lst = []
     minhq=Mins.select().where((Mins.stock == name)
                             & (Mins.dt > hq_st_dt))#.limit
+    print("name  name name ",name)
     for it in minhq:
-       result_lst.append([it.detail,it.dt])
+       dt_ = it.dt
+       dt_str = (dt_).strftime("%Y-%m-%d %H:%M:%S")
+       result_lst.append([it.detail,dt_str])
 
-    #return json(minhq)
-    return text(result_lst)
+    return json(result_lst)
+
+@app.route("/date/<namedate:[A-z0-9]+>")
+async def stock_his_handler(request,namedate):
+    """handler query datum for the specified stock
+    @ the history date"""
+    result_lst = []
+    name, yr,mn,dy = namedate[:8],namedate[8:12], namedate[12:14],namedate[14:]
+    sdate = yr+"-"+mn+"-"+dy
+    #_date = datetime.strptime(sdate,"%Y%m%d") print("namedate splite {} == {}".format(name,sdate))
+    items=Mins.select().where((Mins.stock == name)
+                            & (Mins.dt.contains(sdate)))
+    for it in items:
+       dt_ = it.dt
+       dt_str = (dt_).strftime("%Y-%m-%d %H:%M:%S")
+       result_lst.append([it.detail,dt_str])
+
+    return json(result_lst)
+
 
 
 app.run(host="0.0.0.0", port=8000, debug=True)
