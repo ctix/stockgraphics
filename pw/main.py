@@ -80,13 +80,15 @@ async def stock_hq_handler(request,name):
     minhq=Mins.select().where((Mins.stock == name)
                             & (Mins.dt > hq_1min))#.limit
     for it in minhq:
-       result_lst.append([it.detail,it.dt])
+       dt_str = (it.dt).strftime("%Y-%m-%d %H:%M:%S")
+       result_lst.append([it.detail,dt_str])
 
     #return json(minhq)
-    return text(result_lst)
+    return json(result_lst)
 
 @app.route("/today/<name:[A-z0-9]+>")
 async def stock_hq_handler(request,name):
+    hq_today = get_hq_dt("now")
     result_lst = []
     minhq=Mins.select().where((Mins.stock == name)
                             & (Mins.dt > hq_st_dt))#.limit

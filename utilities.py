@@ -1,4 +1,6 @@
 import numpy as np
+from datetime import datetime ,timedelta
+import time
 
 def minMaxRange(x,range_values):
     """scale data list to fit the range values"""
@@ -6,9 +8,31 @@ def minMaxRange(x,range_values):
                     (range_values[1] - range_values[0])+\
             range_values[0],2) for xx in x]
 
-import datetime
-def getCurrentDate(): 
-	return	datetime.datetime.now().strftime('%Y-%m-%d')
+def getCurrentDate():
+	return	datetime.now().strftime('%Y-%m-%d')
+
+
+def sleep_seconds():
+    ntt = time.localtime()
+    startt = datetime(ntt.tm_year,ntt.tm_mon,ntt.tm_mday, 9,29,55)
+    noons = datetime(ntt.tm_year,ntt.tm_mon,ntt.tm_mday, 11,30,5)
+    noone = datetime(ntt.tm_year,ntt.tm_mon,ntt.tm_mday, 12,59,55)
+    closet = datetime(ntt.tm_year,ntt.tm_mon,ntt.tm_mday, 15,1,0)
+
+    dlt = 0
+    nowt = datetime.now()
+    if nowt < startt :
+        print("Market hasn't yet Open !!!, Wait... ..")
+        dlt = startt - nowt # sleep to time to work
+    elif (nowt > noons) and (nowt < noone): # @noon time
+        dlt = noone - nowt
+    elif nowt > closet :  #Market closed ,ready to quit
+        print("Market Closed Alreedy!!!, Bye-bye ")
+        dlt = 0
+        return "closed"
+
+    time.sleep(dlt.seconds)
+
 
 def Compute_Vol_all(vol_data):
     """pdata['vol'] contains all the accumulative volume """
@@ -59,9 +83,9 @@ def scale_vol(pdata_vol, pdata_price,down):
     voldata = minMaxRange(voldata, (mi-down,mx-down))
     return voldata
 
-if __name__ == '__main__': 
+if __name__ == '__main__':
     name = "pkl"
-    name += getCurrentDate() 
+    name += getCurrentDate()
     print("Name is {}".format(name))
 
-    
+
