@@ -92,7 +92,7 @@ async def stock_hq_handler(request,name):
     result_lst = []
     minhq=Mins.select().where((Mins.stock == name)
                             & (Mins.dt > hq_st_dt))#.limit
-    print("name  name name ",name)
+    #print("name  name name ",name)
     for it in minhq:
        dt_ = it.dt
        dt_str = (dt_).strftime("%Y-%m-%d %H:%M:%S")

@@ -19,17 +19,24 @@ def sleep_seconds():
     noone = datetime(ntt.tm_year,ntt.tm_mon,ntt.tm_mday, 12,59,55)
     closet = datetime(ntt.tm_year,ntt.tm_mon,ntt.tm_mday, 15,1,0)
 
-    dlt = 0
+    dlt = timedelta(seconds=0)
     nowt = datetime.now()
     if nowt < startt :
         print("Market hasn't yet Open !!!, Wait... ..")
         dlt = startt - nowt # sleep to time to work
+    elif (nowt > startt) and (nowt < noons): # @morning trading time
+        return                                # the duration not need to check time
+    elif (nowt > noone) and (nowt < closet): # @afternoon trading time
+        return
     elif (nowt > noons) and (nowt < noone): # @noon time
         dlt = noone - nowt
+        print("Market @noon time Closed Alreedy!!!,\n  \
+            relax {} minutes {} seconds ".format(int(dlt.seconds/60),  int(dlt.seconds%60)))
     elif nowt > closet :  #Market closed ,ready to quit
         print("Market Closed Alreedy!!!, Bye-bye ")
-        dlt = 0
-        return "closed"
+        dlt = timedelta(seconds=3)
+        #return "closed"   ## for debug double axes
+
 
     time.sleep(dlt.seconds)
 
