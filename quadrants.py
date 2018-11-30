@@ -31,8 +31,7 @@ now = datetime.datetime.now()
 print(str(now))
 stlist = ["sh600460","sz002389","sz300059","sz300474"]
 
-#test_re = RetrieveOnLine(stlist, 30)
-
+## TODO:  read the config from this file
 rest_config_file = "pw/rest.ini"
 
 #ip_port = "http://172.16.6.55:8000/"
@@ -45,11 +44,7 @@ sanic_day_rest_api = ip_port + day_all_
 sanic_his_rest_api = ip_port + history
 sanic_hq_rest_api = ip_port + hq
 
-
-#def get_rest_api(stock_name):
-    ##sanic_rest_api = "http://172.16.6.55/hq"
-    #pass
-
+## TODO : move to the global definition file
 ## API returned data Structure
 cols=[ "open", "yclose", "price", "high", "low",
 "buy", "sell", "vol", "amt",
@@ -98,16 +93,9 @@ def relative_data_vol(pdata):
     return _voldata
 
 def plot_price_vol_curve(pdata, voldata, pos):
-    #global pv0, pv1, pv2, pv3
     mypen = pg.mkPen(color='r',width=3)
-    #print("pos value ==> {}".format(pos))
-    #### plot the sample line to test
-    #exec("p{0}.plot([10,20,200,30,40,50,60],pen=mypen)".format(pos))
-    #exec("pv{0}.addItem(p{0}.plot([100,200,50,300,400,150,500,600],pen='y'))".format(pos))
     exec("p{0}.plot(pdata['price'],pen=mypen)".format(pos))
     exec("pv{0}.addItem(pg.PlotCurveItem(voldata,pen='y'))".format(pos))
-    #exec("pv{0}.addItem(p{0}.plot(voldata,pen='y'))".format(pos))
-    #exec("vol_curve{0}=p{0}.plot(voldata,pen='y')".format(pos))
 
 
 #def plot_parse_per_stock(stock_name, datum):
@@ -121,7 +109,6 @@ def plot_price_vol_curve(pdata, voldata, pos):
 #Handle view resizing
 def updateViews():
     ## view has resized; update auxiliary views to match
-    #global pv0 ,pv1, pv2, pv3
     for i in range(4):
         exec("pv{0}.setGeometry(p{0}.vb.sceneBoundingRect())".format(i))
 
@@ -129,8 +116,8 @@ def updateViews():
 app = QtGui.QApplication([])
 win = pg.GraphicsWindow(title="stock pricing plotting examples")
 win.resize(1000,600)
-
 win.setWindowTitle('pyqtgraph example: Plotting')
+
 # Enable antialiasing for prettier plots
 pg.setConfigOptions(antialias=True)
 
@@ -140,35 +127,20 @@ for i in range(4):
     exec("p{} = win.addPlot(title='{}')".format(i,stlist[i]))
     exec("p{}.showGrid(x=True, y=True, alpha=0.7)".format(i))
     ## set right axis
-    #exec("pv{} = win.addViewBox()".format(i))     # ViewBox
-    #exec("ax{} = pg.AxisItem('right')".format(i))
-    #exec("p{0}.layout.addItem(ax{0}, 2, 3)".format(i))
-    #exec("p{0}.scene().addItem(pv{0})".format(i))
-    #exec("ax{0}.linkToView(pv{0})".format(i))
-    #exec("pv{0}.setXLink(p{0})".format(i))
-    #exec("ax{}.setZValue(-10000)".format(i))
-    #exec("ax{}.setLabel('axis 3', color='#ff0000')".format(i))
-
     exec("pv{} = pg.ViewBox()".format(i))     # ViewBox
     exec("p{}.showAxis('right')".format(i))     #
     exec("p{0}.scene().addItem(pv{0})".format(i))
     exec("p{0}.getAxis('right').linkToView(pv{0})".format(i))
     exec("pv{0}.setXLink(p{0})".format(i))
     exec("p{}.getAxis('right').setLabel('axis2', color='#0000ff')".format(i))
-    #exec("vol_curve{0} = p{0}.plot(pen='y')".format(i))
-    #exec("pv{0}.addItem(vol_curve{0})".format(i))
-    print("i===={}".format(i))
+    #print("i===={}".format(i))
 
-#define the dynamic variable names
-print(list(enumerate(stlist)))
 # define the downwards size
 down = 0.4
 
 
 #merge the pickle load data to the datalines
 ## Animating the situation
-
-    #datalinesvoldata = .append({"name":stk, "price": [],"vol": []})
 
 def acquiring_plotting(indx, stockname, adate=""):
     if adate:
@@ -199,7 +171,6 @@ for i,stockname in enumerate(stlist):
 def update():
 
     sleep_seconds()
-
     for i,stockname in enumerate(stlist):
         now_price =  acquiring_plotting(i,stockname)
         exec("p{0}.setTitle('{1}@price ={2}')".\
@@ -208,7 +179,7 @@ def update():
 timer = QtCore.QTimer()
 timer.timeout.connect(update)
 ##interval 29 sec to update the plotting
-timer.start(3000)
+timer.start(40000)
 
 updateViews()
 #win.vb.sigResized.connect(updateViews)
