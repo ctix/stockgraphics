@@ -35,8 +35,9 @@ stlist = ["sh600460","sz002389","sz300059","sz300474"]
 rest_config_file = "pw/rest.ini"
 
 #ip_port = "http://172.16.6.55:8000/"
+ip_port = "http://172.16.6.112:8000/"
 #ip_port = "http://172.16.6.88:8000/"
-ip_port = "http://192.168.1.104:8000/"
+# ip_port = "http://192.168.1.04:8000/"
 day_all_="today/"
 history = "date/"
 hq="hq/"
@@ -85,7 +86,10 @@ def convert_dataframe(datum_lst):
 
 def relative_data_vol(pdata):
     """voldata plotting size per price ,just for better look and feel on UI; pdata is a dictionary of {'price' :[], 'vol':[] } """
-    assert len(pdata['vol']) > 2  # assure got a value list
+    try :
+        assert len(pdata['vol']) > 2  # assure got a value list
+    except Exception as e:               ## May it be some huge stock got a long time to initating
+        print(str(e),"data items less than 2")
     voldata = list(np.array(pdata['vol'][1:])-np.array(pdata['vol'][:-1]))
     mi, mx = min(pdata['price']),max(pdata['price'])
     #_voldata = minMaxRange(voldata, (mi-down,mx-down))
@@ -132,7 +136,7 @@ for i in range(4):
     exec("p{0}.scene().addItem(pv{0})".format(i))
     exec("p{0}.getAxis('right').linkToView(pv{0})".format(i))
     exec("pv{0}.setXLink(p{0})".format(i))
-    exec("p{}.getAxis('right').setLabel('axis2', color='#0000ff')".format(i))
+    #exec("p{}.getAxis('right').setLabel('axis2', color='#0000ff')".format(i))
     #print("i===={}".format(i))
 
 # define the downwards size
@@ -148,13 +152,17 @@ def acquiring_plotting(indx, stockname, adate=""):
     else:
         skdatlst = get_rest_pre_all(stockname ,"today")
     sk_all_df = convert_dataframe(skdatlst)
-    price_lst = sk_all_df["price"].tolist()
-    vol_lst = sk_all_df["vol"].tolist()
-    if not vol_lst:
+    ## convert list to numpy array
+    price_lst = np.array(sk_all_df["price"].tolist())
+    vol_lst = np.array(sk_all_df["vol"].tolist())/100.0
+    if not vol_lst.any():
         print("Error Ocurred!! , {} got nothing, next loop!!".format(stockname))
         return 0
     pdata = {"name": stockname,  "price": price_lst , "vol":vol_lst}
 
+    if  len(pdata['vol']) < 2 :
+        print("stock ==> {} has less than 2  items !!".format(stockname))
+        return 0
     print("<{}={}> ".format(stockname, len(pdata['vol'])))
     voldata = relative_data_vol(pdata)
     plot_price_vol_curve(pdata, voldata, indx)
