@@ -1,0 +1,8 @@
+{
+  "test_read_different_files.py": true,
+  "test_read_different_files.py::Test_Config_Files::()::test_config_options": true,
+  "test_read_different_files.py::Test_Config_Files::()::test_file_items": true,
+  "test_read_different_files.py::Test_Config_Files::()::test_file_sections": true,
+  "test_read_different_files.py::Test_Config_Files::()::test_sections_no_num[1234]": true,
+  "test_read_different_files.py::test_file_exist": true
+}
