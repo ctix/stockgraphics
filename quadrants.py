@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 """
 Notice: only support to get whole bulk of datum , not one by one ,
-Because , when evaluated as whole , it can decides the relative plotting size , and positions for price and volumn
+Because , when evaluated as whole , it can decides the relative
+plotting size , and positions for price and volumn
 This example demonstrates quadrants plotting pricing/vol line capabilities
 in pyqtgraph.  Now the demo can show 4 stocks in quadrants with pricing and
 volume, act as a stock pricing client in linux
@@ -19,8 +20,6 @@ import datetime
 # import time
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtGui, QtCore
-# from pyqtgraph.Point import Point
-# import pickle
 import json
 from utilities import sleep_seconds
 from urllib.request import urlopen
@@ -28,7 +27,6 @@ from urllib.request import urlopen
 # Below code should be observed if duetime past ,should executed immediately
 now = datetime.datetime.now()
 print(str(now))
-
 
 
 def percentage(now_price, open_price):
@@ -147,22 +145,17 @@ def acquiring_latest_plotting_datum(stockname, adate=""):
         return 0
 
 
-def update_plot_data(indx,stockname,adate=""):
+def update_plot_data(indx, stockname, adate=""):
     pdata = acquiring_latest_plotting_datum(stockname, adate)
     price_lst = pdata['price']
     vol_lst = relative_data_vol(pdata)
     # plot_price_vol_curve(pdata, voldata, indx)
     return [price_lst, vol_lst]
 
-    # plot_price_vol_curve(price_lst, vol_lst, indx)
 
-    # now_price, open_price = price_lst[-1], price_lst[0]
-    # return [now_price, open_price]
-
-
-class StockGraph:
+class StockGraph(object):
     def __init__(self, title, stock_list):
-        self.stock_list =  stock_list
+        self.stock_list = stock_list
         self.app = QtGui.QApplication([])
         self.win = pg.GraphicsWindow(title=title)
         self.win.resize(1000, 600)
@@ -171,6 +164,7 @@ class StockGraph:
         pg.setConfigOptions(antialias=True)
         # TODO: if eight securities , think how to tackle
         self.create_quadrants(stock_list)
+        self.toggled_ = 1
 
     def create_quadrants(self, stlist):
         for i in range(4):
@@ -187,12 +181,17 @@ class StockGraph:
             exec("self.p{0}.scene().addItem(self.pv{0})".format(i))
             exec("self.p{0}.getAxis('right').linkToView(self.pv{0})".format(i))
             exec("self.pv{0}.setXLink(self.p{0})".format(i))
+            exec("self.vol_curve{0} = pg.PlotCurveItem(pen='y')".format(i))
 
     def plot_price_vol_curve(self, price_lst, vol_lst, pos):
         mypen = pg.mkPen(color='r', width=3)
-        exec("self.p{}.plot(price_lst , pen=mypen)".format(pos))
-        exec("self.pv{}.addItem(pg.PlotCurveItem(vol_lst,pen='y'))"
-                .format(pos))
+        exec("self.price_curve{0} = self.p{0}.plot(price_lst , pen=mypen)".format(pos))
+        exec("self.pv{0}.addItem(pg.PlotCurveItem(vol_lst,pen='y'))".format(pos))
+
+    def clear_plot(self):
+        for i in range(4):
+            exec("self.price_curve{}.clear()".format(i))
+            exec("self.pv{}.clear()".format(i))
 
     # Handle view resizing
     def updateViews(self):
@@ -201,34 +200,38 @@ class StockGraph:
             exec("self.pv{0}.setGeometry(self.p{0}\
                  .vb.sceneBoundingRect())".format(i))
 
-
     def update(self):
+        stlist1 = ["sh000001", "sz399001", "sz002008", "sz002414"]
         # No need to check during the market trading period
-        sleep_seconds()  # this shoule be considered to optimize
+        sleep_seconds()  # this should be considered to optimize
         # the following code toggle the displaying of more securities
-        # stock_list = stlist if toggled_ else stlist1
-        # toggled_ = 0  if toggled_ else 1
-        for i, stockname in enumerate(self.stock_list):
-            # pdatum = acquiring_latest_plotting_datum(stockname)
+        stock_list = stlist1 if self.toggled_ else self.stock_list
+        self.toggled_ = 0 if self.toggled_ else 1
+        print("!toggle==>", self.toggled_)
+        self.clear_plot()
+        # for i, stockname in enumerate(self.stock_list):
+        for i, stockname in enumerate(stock_list):
             pst, vlst = update_plot_data(i, stockname)
-            self.plot_price_vol_curve(pst,vlst,i)
             now_price, open_price = pst[-1], pst[0]
+            self.plot_price_vol_curve(pst, vlst, i)
             uprate = percentage(now_price, open_price)
-            # pg.mkPen('g', width=2)  # seemed no use =======2018.12.12.11:21(星期三)=======
             exec("self.p{0}.setTitle('{1}@{2} {3}%')"
-                .format(i, stockname, now_price, uprate))
-
+                 .format(i, stockname, now_price, uprate))
 
     def run(self):
         timer = QtCore.QTimer()
         timer.timeout.connect(self.update)
-        # interval 29 sec to update the plotting
+        # interval 40 sec to update the plotting
+        # timer.start(9000)
         timer.start(40000)
 
         self.updateViews()
         # win.vb.sigResized.connect(updateViews)
         for i in range(4):
             exec("self.p{}.vb.sigResized.connect(self.updateViews)".format(i))
+        # add the signal keyPressed Event
+        # exec("self.p{}.vb.keyPressed.connect(self.keyPressed)".format(i))
+        # self.p3.vb.sigKeyPressed.connect(self.keyPressed)
 
         self.app.exec_()
 
@@ -257,6 +260,6 @@ if __name__ == '__main__':
     # initiating the datum and plotting
     for i, stockname in enumerate(stock_list):
         pst, vlst = update_plot_data(i, stockname)
-        quadrant_graph.plot_price_vol_curve(pst,vlst,i)
+        quadrant_graph.plot_price_vol_curve(pst, vlst, i)
 
     quadrant_graph.run()
