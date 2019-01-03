@@ -124,9 +124,6 @@ class RetrieveOnLine:
         workPmTime = DueTime(13, 00)
         j = 0  # delay counter
         for stockcode in self.stocklist:  # improving below
-            # stockname = "sh" + \
-            #            stockcode if stockcode[:2] == "60" else "sz" + stockcode
-            #before the Market open ,scheduled the inqury tasks
             self._sched.enterabs(workAmTime + 40 * j, 1, self.perform, (stockcode,))
             self._sched.enterabs(workPmTime + 40 * j, 1, self.perform, (stockcode,))
             j += 1
@@ -205,7 +202,8 @@ if __name__ == "__main__":
     now = datetime.datetime.now()
     print(str(now))
     #stlist = ["sz300474","sz002049"]
-    stlist = readconfig.get_all()
+    # stlist = readconfig.get_all()
+    stlist = readconfig.get_stocks("monitored")
     print("ALL options will be read from URL ==> {}".format(stlist))
 
     test_re = RetrieveOnLine(stlist, 50)

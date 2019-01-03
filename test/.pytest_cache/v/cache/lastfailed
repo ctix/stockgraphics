@@ -1,5 +1,5 @@
 {
-  "test_read_different_files.py": true,
+  "test_read_different_files.py::Test_Config_Files::()": true,
   "test_read_different_files.py::Test_Config_Files::()::test_config_options": true,
   "test_read_different_files.py::Test_Config_Files::()::test_file_items": true,
   "test_read_different_files.py::Test_Config_Files::()::test_file_sections": true,

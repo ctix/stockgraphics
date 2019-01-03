@@ -23,6 +23,7 @@ from pyqtgraph.Qt import QtGui, QtCore
 import json
 from utilities import sleep_seconds
 from urllib.request import urlopen
+import pw.readconfig
 
 # Below code should be observed if duetime past ,should executed immediately
 now = datetime.datetime.now()
@@ -120,11 +121,11 @@ def datum_from_api(stockname, adate=""):
 
 
 def validate_list(input_lst):
-    if not input_lst.any():
-        print("Empty !! nothing in List!!")
-        return False
-    elif len(input_lst) < 2:
+    if len(input_lst) < 2:
         print("Valid items must more than TWO!! ")
+        return False
+    elif not input_lst.any():
+        print("Empty !! nothing in List!!")
         return False
     else:
         return True
@@ -147,7 +148,12 @@ def acquiring_latest_plotting_datum(stockname, adate=""):
 
 def update_plot_data(indx, stockname, adate=""):
     pdata = acquiring_latest_plotting_datum(stockname, adate)
-    price_lst = pdata['price']
+    print("stock name ==> {}".format(stockname))
+    try:
+        price_lst = pdata['price']
+    except TypeError as e :
+        print("!ERROR in stcok elements".format(stockname ))
+        print(e)
     vol_lst = relative_data_vol(pdata)
     # plot_price_vol_curve(pdata, voldata, indx)
     return [price_lst, vol_lst]
@@ -162,8 +168,9 @@ class StockGraph(object):
         self.win.setWindowTitle(title)
         # Enable antialiasing for prettier plots
         pg.setConfigOptions(antialias=True)
-        # TODO: if eight securities , think how to tackle
-        self.create_quadrants(stock_list)
+        # TODO: if eight securities or more , think how to tackle
+        # create the first 4 stocks title in Display quadrants
+        self.create_quadrants(stock_list[:4])
         self.toggled_ = 1
 
     def create_quadrants(self, stlist):
@@ -200,13 +207,27 @@ class StockGraph(object):
             exec("self.pv{0}.setGeometry(self.p{0}\
                  .vb.sceneBoundingRect())".format(i))
 
+    # group every 4 stock in  a row for displaying
+    def quadrant_stock_list(self):
+        pass
+        # try:
+            # len (self.stock_list)
+            # self.stock_list
+
+
     def update(self):
-        stlist1 = ["sh000001", "sz399001", "sz002008", "sz002414"]
         # No need to check during the market trading period
         sleep_seconds()  # this should be considered to optimize
         # the following code toggle the displaying of more securities
-        stock_list = stlist1 if self.toggled_ else self.stock_list
-        self.toggled_ = 0 if self.toggled_ else 1
+        # stock_list = stlist1 if self.toggled_ else self.stock_list
+        if self.toggled_ :
+            stock_list = self.stock_list[4:]
+            self.toggled_ = 0
+        else:
+            stock_list = self.stock_list[:4]
+            self.toggled_ = 1
+
+        # self.toggled_ = 0 if self.toggled_ else 1
         print("!toggle==>", self.toggled_)
         self.clear_plot()
         # for i, stockname in enumerate(self.stock_list):
@@ -222,43 +243,22 @@ class StockGraph(object):
         timer = QtCore.QTimer()
         timer.timeout.connect(self.update)
         # interval 40 sec to update the plotting
-        # timer.start(9000)
         timer.start(40000)
 
         self.updateViews()
-        # win.vb.sigResized.connect(updateViews)
         for i in range(4):
             exec("self.p{}.vb.sigResized.connect(self.updateViews)".format(i))
-        # add the signal keyPressed Event
-        # exec("self.p{}.vb.keyPressed.connect(self.keyPressed)".format(i))
-        # self.p3.vb.sigKeyPressed.connect(self.keyPressed)
-
         self.app.exec_()
 
 
-# Thinking twice of add a button to toggle the views of
-# more stock graphics, now , I change my mind that the timeout mechanism
-# will do the job
-# tglBtn = QtGui.QPushButton('<<Next>>')
-# win.nextRow()
-# win.addWidget(tglBtn)
-
-# merge the pickle load data to the datalines
-# Animating the situation
-
-# add the testing procedure to iminate the retrieving data
-###
-# now_price
-
-
 if __name__ == '__main__':
-    stock_list = ["sh600460", "sz002389", "sz300059", "sz300474"]
-    stlist1 = ["sh000001", "sz399001", "sz002008", "sz002414"]
-
+    configfn = "./config/stocks.ini"
+    cfg = pw.readconfig.ConfigOfStocks(configfn)
+    stock_list = cfg.get_section_list("monitored")
     title_ = "Quadrant Display securities curves"
     quadrant_graph = StockGraph(title_, stock_list)
-    # initiating the datum and plotting
-    for i, stockname in enumerate(stock_list):
+    # initiating the datum and plotting the first 4 securities
+    for i, stockname in enumerate(stock_list[:4]):
         pst, vlst = update_plot_data(i, stockname)
         quadrant_graph.plot_price_vol_curve(pst, vlst, i)
 

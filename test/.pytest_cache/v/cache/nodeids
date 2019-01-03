@@ -1,1 +1,10 @@
-[]
+[
+  "test_read_different_files.py::Test_Config_Files::()::test_files_exist",
+  "test_read_different_files.py::Test_Config_Files::()::test_get_section_option_value[monitored-htgx-sz002023]",
+  "test_read_different_files.py::Test_Config_Files::()::test_get_section_option_value[wine-gzmt-sh600519]",
+  "test_read_different_files.py::Test_Config_Files::()::test_get_section_option_value[hi-tek-jjw-sz300474]",
+  "test_read_different_files.py::Test_Config_Files::()::test_have_more_sections_than3",
+  "test_read_different_files.py::Test_Config_Files::()::test_options_in_section[name_categroy_data0]",
+  "test_read_different_files.py::Test_Config_Files::()::test_options_in_section[name_categroy_data1]",
+  "test_read_different_files.py::Test_Config_Files::()::test_options_in_section[name_categroy_data2]"
+]
