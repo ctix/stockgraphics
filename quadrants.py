@@ -254,7 +254,7 @@ class StockGraph(object):
 if __name__ == '__main__':
     configfn = "./config/stocks.ini"
     cfg = pw.readconfig.ConfigOfStocks(configfn)
-    stock_list = cfg.get_section_list("monitored")
+    stock_list = cfg.get_section_value_list("monitored")
     title_ = "Quadrant Display securities curves"
     quadrant_graph = StockGraph(title_, stock_list)
     # initiating the datum and plotting the first 4 securities

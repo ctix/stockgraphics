@@ -1,4 +1,4 @@
-#coding=utf-8
+# coding=utf-8
 """
 Demo the retrieving from stock pricing website , and
 drawing the real time pricing and volume on the fly
@@ -12,8 +12,8 @@ perfom the whole Bidding data set .
 """
 ###################
 # TODO: 1, start before open/or after closed , returned date format
-##    1.1 , the date time of every coming data set
-## 2 , the Bidding price distribution info/dataset , add to the plotting
+# 1.1 , the date time of every coming data set
+# 2 , the Bidding price distribution info/dataset , add to the plotting
 import time
 import datetime
 import threading
@@ -25,13 +25,13 @@ import dataStruct
 
 # from collections import namedtuple
 
-#generating layout refer to layout file
+# generating layout refer to layout file
 
 # initiating the sched module scheduler
 #
 
 
-### TODO
+# TODO
 # rethink the data structure, leave to next step
 # Bidding = namedtuple('Bidding',['name','b1','b2'])
 # namedtuple has no way to change the inside elements use
@@ -73,24 +73,24 @@ def DueTime(duetime_hour, duetime_min):
 class RetrieveOnLine:
     """Retrieving the the list stocks' bidding and pricing data from on line,
     return the data lines from the open moment """
-    def __init__(self,stocklist,interval):
+
+    def __init__(self, stocklist, interval):
         self.stocklist = stocklist
         # initiating the sched module scheduler
         self._sched = sched.scheduler(time.time, time.sleep)
         self.datalines = []
-        self.interval =  interval
+        self.interval = interval
         self.SegmentData = []
         for stk in stocklist:  # under change for the above reason
-            self.datalines.append({"name":stk, "price": [],\
+            self.datalines.append({"name": stk, "price": [],
                                    "vol": []})
             # self.datalines.append({"name":stk, "price": np.array([]),\
-                                   # "vol": np.array([])})
+            # "vol": np.array([])})
             # stock = Stock(stk,np.array([]))
             # self.datalines.append(stock)
 
         # show the updating the data in-place, otherwise it will be only a copy
         # self.datalines[0].price =np.append(self.datalines[0].price,new_data)
-
 
     def perform(self, name):
         """perform cycle scheduled task of xxx seconds """
@@ -100,17 +100,17 @@ class RetrieveOnLine:
             for task in self._sched.queue:
                 if task.time - time.time() < 300:  # remove the am event from stack
                     self._sched.cancel(task)
-                    print("scheduled latest removed by Market Close!!,clean up ready,save2db !!")
+                    print(
+                        "scheduled latest removed by Market Close!!,clean up ready,save2db !!")
             return []  # think twice no need to return
         self._sched.enter(self.interval, 0, self.perform, (name,))
         oneline = self.getStockData(name)
         if not oneline:
             print("Previous getting url sinaHq Errors! ,return 0 ,do nothing!!")
-            return 0  #  will me ??
-        ## compose the data item
+            return 0  # will me ??
+        # compose the data item
         data_item = [name] + oneline
         self.pw_save(data_item)
-
 
     def realtimeDataTracking(self):
         """ From the time of Open Market to Closed time , perform
@@ -124,8 +124,10 @@ class RetrieveOnLine:
         workPmTime = DueTime(13, 00)
         j = 0  # delay counter
         for stockcode in self.stocklist:  # improving below
-            self._sched.enterabs(workAmTime + 40 * j, 1, self.perform, (stockcode,))
-            self._sched.enterabs(workPmTime + 40 * j, 1, self.perform, (stockcode,))
+            self._sched.enterabs(workAmTime + 40 * j, 1,
+                                 self.perform, (stockcode,))
+            self._sched.enterabs(workPmTime + 40 * j, 1,
+                                 self.perform, (stockcode,))
             j += 1
 
         print(self._sched.queue)
@@ -133,8 +135,7 @@ class RetrieveOnLine:
         t.start()
         t.join()
 
-
-    def getStockData(self,stockCode):
+    def getStockData(self, stockCode):
         """open stock data provider  url get real time stock pricing/bidding
         but delays exist """
         import time
@@ -163,52 +164,45 @@ class RetrieveOnLine:
             print("Length Error != 33 Hqlist is invalid!!!!!!!!!!! return 0  \n")
             print("Error List contains===>", hqList)
             return 0
-        ### below code block show the data structure of the retrieved data
+        # below code block show the data structure of the retrieved data
         todayOpen, yesClose, atTime = hqList[1], hqList[2],\
-                                      hqList[31].split('"')[0]
-        tmpHigh,tmpLow, tmpVol ,tmpMoney =  hqList[4], hqList[5],\
-                                            hqList[8] , hqList[9]
-        #only interest in price and vol , Biddings not used
+            hqList[31].split('"')[0]
+        tmpHigh, tmpLow, tmpVol, tmpMoney = hqList[4], hqList[5],\
+            hqList[8], hqList[9]
+        # only interest in price and vol , Biddings not used
         now_price = float(hqList[3])
-        now_vol =  float(tmpVol)
+        now_vol = float(tmpVol)
         # stkcode = stockCode[-6:]
         stkcode = stockCode
-        indx = self.stocklist.index(stkcode)  #list index by stock name
-        assert self.datalines[indx]["name"] ==  stkcode
+        indx = self.stocklist.index(stkcode)  # list index by stock name
+        assert self.datalines[indx]["name"] == stkcode
         self.datalines[indx]["price"].append(now_price)
         self.datalines[indx]["vol"].append(now_vol)
         valList = list(map(float, hqList[1:30])) + [hqList[30]] + [atTime]
         return valList
 
-    def pw_save(self,dt_item):
+    def pw_save(self, dt_item):
         if len(dt_item) < 1:  # nothing in Array
             print("Warning: Nothing in the received item !!")
             return
         stock, timestamp = dt_item[0],  " ".join(dt_item[30:])
         details = ', '.join(str(x) for x in dt_item[1:30])
 
-        ## append the first to Mins table
-        last_tmp = dataStruct.Mins(stock=stock, detail=details , dt=timestamp)
+        # append the first to Mins table
+        last_tmp = dataStruct.Mins(stock=stock, detail=details, dt=timestamp)
         save_n = last_tmp.save()
-        print("the saved details ==>",details)
-        print("@{} {} numbers  to save to sqlite!!==>{}".format(timestamp,save_n,stock))
+        print("the saved details ==>", details)
+        print("@{} {} numbers  to save to sqlite!!==>{}".format(
+            timestamp, save_n, stock))
 
 
 if __name__ == "__main__":
-    # MarketCloseTime = DueTime(15, 00)
-    # Below code should be observed if duetime past ,should executed immediately
-    # workAmTime = DueTime(9, 30)
-    # workPmTime = DueTime(13, 00)
     now = datetime.datetime.now()
     print(str(now))
-    #stlist = ["sz300474","sz002049"]
-    # stlist = readconfig.get_all()
-    stlist = readconfig.get_stocks("monitored")
+    configfn = "../config/stocks.ini"
+    cfg = readconfig.ConfigOfStocks(configfn)
+    stlist = cfg.get_section_value_list("monitored")
     print("ALL options will be read from URL ==> {}".format(stlist))
 
     test_re = RetrieveOnLine(stlist, 50)
     test_re.realtimeDataTracking()
-    #print(test_re.datalines)
-
-
-
