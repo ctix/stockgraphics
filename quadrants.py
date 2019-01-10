@@ -148,7 +148,7 @@ def acquiring_latest_plotting_datum(stockname, adate=""):
 
 def update_plot_data(indx, stockname, adate=""):
     pdata = acquiring_latest_plotting_datum(stockname, adate)
-    print("stock name ==> {}".format(stockname))
+    # prin("stock name ==> {}".format(stockname))
     try:
         price_lst = pdata['price']
     except TypeError as e :
