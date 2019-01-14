@@ -248,6 +248,7 @@ class StockGraph(object):
         self.updateViews()
         for i in range(4):
             exec("self.p{}.vb.sigResized.connect(self.updateViews)".format(i))
+            exec("self.p{}.vb.setMouseEnabled(False,False)".format(i))
         self.app.exec_()
 
 
