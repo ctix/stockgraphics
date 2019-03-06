@@ -30,7 +30,6 @@ import dataStruct
 # initiating the sched module scheduler
 #
 
-
 # TODO
 # rethink the data structure, leave to next step
 # Bidding = namedtuple('Bidding',['name','b1','b2'])
@@ -38,6 +37,7 @@ import dataStruct
 # dictionary data structure instead
 # Stock = namedtuple('Stock',['name','price'])
 # datum lines should be look like  list of dictionary
+
 
 def AtTransactionTime():
     """ Transaction duration definition,and return which time segments """
@@ -82,8 +82,7 @@ class RetrieveOnLine:
         self.interval = interval
         self.SegmentData = []
         for stk in stocklist:  # under change for the above reason
-            self.datalines.append({"name": stk, "price": [],
-                                   "vol": []})
+            self.datalines.append({"name": stk, "price": [], "vol": []})
             # self.datalines.append({"name":stk, "price": np.array([]),\
             # "vol": np.array([])})
             # stock = Stock(stk,np.array([]))
@@ -98,15 +97,18 @@ class RetrieveOnLine:
         #  Transaction, while other hand in afterwards , shall end
         if AtTransactionTime() in ["noon", "after"]:
             for task in self._sched.queue:
-                if task.time - time.time() < 300:  # remove the am event from stack
+                if task.time - time.time(
+                ) < 300:  # remove the am event from stack
                     self._sched.cancel(task)
                     print(
-                        "scheduled latest removed by Market Close!!,clean up ready,save2db !!")
+                        "scheduled latest removed by Market Close!!,clean up ready,save2db !!"
+                    )
             return []  # think twice no need to return
-        self._sched.enter(self.interval, 0, self.perform, (name,))
+        self._sched.enter(self.interval, 0, self.perform, (name, ))
         oneline = self.getStockData(name)
         if not oneline:
-            print("Previous getting url sinaHq Errors! ,return 0 ,do nothing!!")
+            print(
+                "Previous getting url sinaHq Errors! ,return 0 ,do nothing!!")
             return 0  # will me ??
         # compose the data item
         data_item = [name] + oneline
@@ -124,10 +126,10 @@ class RetrieveOnLine:
         workPmTime = DueTime(13, 00)
         j = 0  # delay counter
         for stockcode in self.stocklist:  # improving below
-            self._sched.enterabs(workAmTime + 40 * j, 1,
-                                 self.perform, (stockcode,))
-            self._sched.enterabs(workPmTime + 40 * j, 1,
-                                 self.perform, (stockcode,))
+            self._sched.enterabs(workAmTime + 40 * j, 1, self.perform,
+                                 (stockcode, ))
+            self._sched.enterabs(workPmTime + 40 * j, 1, self.perform,
+                                 (stockcode, ))
             j += 1
 
         print(self._sched.queue)
@@ -140,9 +142,9 @@ class RetrieveOnLine:
         but delays exist """
         import time
         # for testing and generating
-        # if _Debug_Mode_:  # or AtTransactionTime() not in ["amdeal", "pmdeal"]:
         HqString = "http://hq.sinajs.cn/list=" + stockCode
-        # from the url return data, retrive the data items ,return the price List
+        # from the url return data, retrive the data items
+        # ,return the price List
         # reading realtime bidding info from sina
         while True:  # if IOError wait 30seconds to retry
             try:
@@ -150,8 +152,6 @@ class RetrieveOnLine:
                 # print(HqString)
                 hqList = urlopen(HqString).read()
                 consume_t = time.time() - begin_t
-                # print "getting from remote hq.sina,consumes %f seconds....." % consume_t
-                # logger.info("Check if the HqString changed!!==> \n %s" % hqList)
                 break
             except IOError:
                 print("IOError ,sleep 20 second,then fetch again")
@@ -159,9 +159,9 @@ class RetrieveOnLine:
 
         hqList = str(hqList)
         hqList = hqList.split(',')
-        # print("====retrieved Hq from sina ,the length ===>", hqList)
         if len(hqList) != 33:
-            print("Length Error != 33 Hqlist is invalid!!!!!!!!!!! return 0  \n")
+            print(
+                "Length Error != 33 Hqlist is invalid!!!!!!!!!!! return 0  \n")
             print("Error List contains===>", hqList)
             return 0
         # below code block show the data structure of the retrieved data
@@ -185,7 +185,7 @@ class RetrieveOnLine:
         if len(dt_item) < 1:  # nothing in Array
             print("Warning: Nothing in the received item !!")
             return
-        stock, timestamp = dt_item[0],  " ".join(dt_item[30:])
+        stock, timestamp = dt_item[0], " ".join(dt_item[30:])
         details = ', '.join(str(x) for x in dt_item[1:30])
 
         # append the first to Mins table

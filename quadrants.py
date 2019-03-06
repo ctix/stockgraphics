@@ -31,7 +31,7 @@ print(str(now))
 
 
 def percentage(now_price, open_price):
-    return round(((now_price - open_price)/open_price)*100.0, 2)
+    return round(((now_price - open_price) / open_price) * 100.0, 2)
 
 
 class RestAPI:
@@ -75,12 +75,11 @@ def get_rest_pre_all(stock_code, vtype="today", hqdate=""):
 
 # TODO : move to the global definition file
 # API returned data Structure
-cols = ["open", "yclose", "price", "high", "low",
-        "buy", "sell", "vol", "amt",
-        "bv1", "b1", "bv2", "b2", "bv3", "b3", "bv4", "b4",
-        "bv5", "b5",
-        "sv1", "s1", "sv2", "s2", "sv3", "s3", "sv4", "s4",
-        "sv5", "s5", "dt"]
+cols = [
+    "open", "yclose", "price", "high", "low", "buy", "sell", "vol", "amt",
+    "bv1", "b1", "bv2", "b2", "bv3", "b3", "bv4", "b4", "bv5", "b5", "sv1",
+    "s1", "sv2", "s2", "sv3", "s3", "sv4", "s4", "sv5", "s5", "dt"
+]
 
 
 def get_minute_datum(stock_name):
@@ -106,7 +105,7 @@ def relative_data_vol(pdata):
         assert len(pdata['vol']) > 2  # assure got a value list
     except Exception as e:  # May it be some huge stock got a long time to initating
         print(str(e), "data items less than 2")
-    volst = list(np.array(pdata['vol'][1:])-np.array(pdata['vol'][:-1]))
+    volst = list(np.array(pdata['vol'][1:]) - np.array(pdata['vol'][:-1]))
     # Having second Axis , show the true value on it
     return volst
 
@@ -137,9 +136,9 @@ def acquiring_latest_plotting_datum(stockname, adate=""):
     sk_all_df = convert_dataframe(skdatlst)
     # convert list to numpy array
     price_lst = np.array(sk_all_df["price"].tolist())
-    vol_lst = np.array(sk_all_df["vol"].tolist())/100.0
+    vol_lst = np.array(sk_all_df["vol"].tolist()) / 100.0
     if validate_list(vol_lst):
-        pdata = {"name": stockname,  "price": price_lst, "vol": vol_lst}
+        pdata = {"name": stockname, "price": price_lst, "vol": vol_lst}
         print("{}={}".format(stockname, len(pdata['vol'])))
         return pdata
     else:
@@ -151,8 +150,8 @@ def update_plot_data(indx, stockname, adate=""):
     # prin("stock name ==> {}".format(stockname))
     try:
         price_lst = pdata['price']
-    except TypeError as e :
-        print("!ERROR in stcok elements".format(stockname ))
+    except TypeError as e:
+        print("!ERROR in stcok elements".format(stockname))
         print(e)
     vol_lst = relative_data_vol(pdata)
     # plot_price_vol_curve(pdata, voldata, indx)
@@ -177,13 +176,13 @@ class StockGraph(object):
         for i in range(4):
             if i == 2:
                 self.win.nextRow()
-            exec("self.p{} = self.win.addPlot(title='{}')"
-                 .format(i, stlist[i]))
+            exec("self.p{} = self.win.addPlot(title='{}')".format(
+                i, stlist[i]))
             # print("i===>", i)
             exec("self.p{}.showGrid(x=True, y=True, alpha=0.7)".format(i))
             # set right axis
-            exec("self.pv{} = pg.ViewBox()".format(i))     # ViewBox
-            exec("self.p{}.showAxis('right')".format(i))     #
+            exec("self.pv{} = pg.ViewBox()".format(i))  # ViewBox
+            exec("self.p{}.showAxis('right')".format(i))  #
             # self.p0.scene().addItem(self.pv0)
             exec("self.p{0}.scene().addItem(self.pv{0})".format(i))
             exec("self.p{0}.getAxis('right').linkToView(self.pv{0})".format(i))
@@ -192,8 +191,10 @@ class StockGraph(object):
 
     def plot_price_vol_curve(self, price_lst, vol_lst, pos):
         mypen = pg.mkPen(color='r', width=3)
-        exec("self.price_curve{0} = self.p{0}.plot(price_lst , pen=mypen)".format(pos))
-        exec("self.pv{0}.addItem(pg.PlotCurveItem(vol_lst,pen='y'))".format(pos))
+        exec("self.price_curve{0} = self.p{0}.plot(price_lst , pen=mypen)".
+             format(pos))
+        exec("self.pv{0}.addItem(pg.PlotCurveItem(vol_lst,pen='y'))".format(
+            pos))
 
     def clear_plot(self):
         for i in range(4):
@@ -211,16 +212,15 @@ class StockGraph(object):
     def quadrant_stock_list(self):
         pass
         # try:
-            # len (self.stock_list)
-            # self.stock_list
-
+        # len (self.stock_list)
+        # self.stock_list
 
     def update(self):
         # No need to check during the market trading period
         sleep_seconds()  # this should be considered to optimize
         # the following code toggle the displaying of more securities
         # stock_list = stlist1 if self.toggled_ else self.stock_list
-        if self.toggled_ :
+        if self.toggled_:
             stock_list = self.stock_list[4:]
             self.toggled_ = 0
         else:
@@ -233,11 +233,12 @@ class StockGraph(object):
         # for i, stockname in enumerate(self.stock_list):
         for i, stockname in enumerate(stock_list):
             pst, vlst = update_plot_data(i, stockname)
-            now_price, open_price = pst[-1], pst[0]
+            # today's up rate up to the previous adj close
+            now_price, yclose_price = pst[-1], pst[1]
             self.plot_price_vol_curve(pst, vlst, i)
-            uprate = percentage(now_price, open_price)
-            exec("self.p{0}.setTitle('{1}@{2} {3}%')"
-                 .format(i, stockname, now_price, uprate))
+            uprate = percentage(now_price, yclose_price)
+            exec("self.p{0}.setTitle('{1}@{2} {3}%')".format(
+                i, stockname, now_price, uprate))
 
     def run(self):
         timer = QtCore.QTimer()

@@ -1,3 +1,5 @@
-*.pyc
 *.db
+*.pyc
+__pycache__/
 datum/
+.pytest_cache/
