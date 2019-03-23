@@ -5,14 +5,28 @@ CONFIGFILE = '../config/stocks.ini'
 
 class ConfigOfStocks(object):
     """Config files category of fields of Stocks"""
+
     def __init__(self, configfn=CONFIGFILE):
         self.config = configparser.ConfigParser()
         self.config.read(configfn)
 
     def get_all_sections_name(self):
         """all the category for the interesting stocks"""
-        return self.config.sections()
-        # print("all sections ==>{} ".format(secs))
+        secs = self.config.sections()
+        #  print("all sections ==>{} ".format(secs))
+        return secs
+
+    def get_all_items_lst(self):
+        """ get all items name value linked list """
+        _lst = []
+        sections = self.get_all_sections_name()
+        for sec in sections:
+            item_pairs = self.config.items(sec)
+            print(">>>>>>>>>>>", item_pairs)
+            for n, v in item_pairs:
+                linked = n + ' ' + v
+                _lst.append(linked)
+        return _lst
 
     def get_section_option_value(self, sec, opt):
         """the stock code by field/category and name """
@@ -48,18 +62,20 @@ class ConfigOfStocks(object):
         for sc in secs:
             lst_ = self.get_section_value_list(sc)
             allst += lst_
-        return set(allst)  # unique name in list
+        return set(allst)    # unique name in list
 
 
 if __name__ == "__main__":
     cfg = ConfigOfStocks()
     secs = cfg.get_all_sections_name()
-    print("all sections name {}".format(secs))
+    print(">>> all sections name {}".format(secs))
+    lst = cfg.get_all_in_list()
+    print(">>>> ALL options values ==> {}".format(lst))
+    lst = cfg.get_all_items_lst()
+    print(">>>>>  items linked pairs ==> {}".format(lst))
     ll = cfg.get_section_value_list("index")
     print("options under index ==> {}".format(ll))
     ll = cfg.get_section_value_list("hi-tek")
     print("options under hi-tek ==> {}".format(ll))
     ll = cfg.get_section_value_list("monitored")
     print("stocks under monitored ==> {}".format(ll))
-    lst = cfg.get_all_in_list()
-    print("ALL options values ==> {}".format(lst))

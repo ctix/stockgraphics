@@ -27,7 +27,7 @@ class MainWindow(QMainWindow):
     def set_listview(self, LV, sect_name):
         slm = QStringListModel()
         if sect_name == "all":
-            stlist = self.cfg.get_all_in_list()
+            stlist = self.cfg.get_all_items_lst()
             self.qall_list = list(stlist)
         else:
             stlist = self.cfg.get_section_value_list(sect_name)
