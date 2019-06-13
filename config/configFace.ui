@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>655</width>
+    <width>457</width>
     <height>587</height>
    </rect>
   </property>
@@ -18,17 +18,17 @@
     <property name="geometry">
      <rect>
       <x>240</x>
-      <y>140</y>
-      <width>181</width>
-      <height>291</height>
+      <y>60</y>
+      <width>171</width>
+      <height>371</height>
      </rect>
     </property>
    </widget>
    <widget class="QLineEdit" name="lineEdit">
     <property name="geometry">
      <rect>
-      <x>250</x>
-      <y>440</y>
+      <x>240</x>
+      <y>470</y>
       <width>101</width>
       <height>24</height>
      </rect>
@@ -37,8 +37,8 @@
    <widget class="QPushButton" name="addButton">
     <property name="geometry">
      <rect>
-      <x>360</x>
-      <y>440</y>
+      <x>350</x>
+      <y>470</y>
       <width>85</width>
       <height>27</height>
      </rect>
@@ -50,8 +50,8 @@
    <widget class="QPushButton" name="quitButton">
     <property name="geometry">
      <rect>
-      <x>70</x>
-      <y>450</y>
+      <x>240</x>
+      <y>510</y>
       <width>85</width>
       <height>27</height>
      </rect>
@@ -63,10 +63,10 @@
    <widget class="QListView" name="favorListView">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>110</y>
-      <width>181</width>
-      <height>331</height>
+      <x>20</x>
+      <y>60</y>
+      <width>191</width>
+      <height>481</height>
      </rect>
     </property>
    </widget>
@@ -74,8 +74,8 @@
     <property name="geometry">
      <rect>
       <x>40</x>
-      <y>70</y>
-      <width>171</width>
+      <y>20</y>
+      <width>91</width>
       <height>21</height>
      </rect>
     </property>
@@ -87,14 +87,14 @@
      </font>
     </property>
     <property name="text">
-     <string>Observation List</string>
+     <string>候 选 池</string>
     </property>
    </widget>
    <widget class="QLabel" name="label_2">
     <property name="geometry">
      <rect>
-      <x>260</x>
-      <y>90</y>
+      <x>250</x>
+      <y>20</y>
       <width>121</width>
       <height>31</height>
      </rect>
@@ -116,8 +116,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>655</width>
-     <height>26</height>
+     <width>457</width>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFiles">
