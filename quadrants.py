@@ -244,7 +244,8 @@ class StockGraph(object):
         timer = QtCore.QTimer()
         timer.timeout.connect(self.update)
         # interval 40 sec to update the plotting
-        timer.start(40000)
+        # timer.start(40000)
+        timer.start(29000)
 
         self.updateViews()
         for i in range(4):

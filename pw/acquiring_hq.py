@@ -19,7 +19,7 @@ import datetime
 import threading
 import sched
 from urllib.request import urlopen
-import os
+#  import os
 import readconfig
 import dataStruct
 
@@ -65,7 +65,7 @@ def AtTransactionTime():
 def DueTime(duetime_hour, duetime_min):
     """ input duetime hour ,min Output Should return duetime ,used by enterabs """
     nowtime = time.localtime()
-    yr, mo, dy = nowtime.tm_year, nowtime.tm_mon, nowtime.tm_mday  # get now date
+    yr, mo, dy = nowtime.tm_year, nowtime.tm_mon, nowtime.tm_mday    # get now date
     duetime = time.mktime((yr, mo, dy, duetime_hour, duetime_min, 0, 0, 0, 0))
     return duetime
 
@@ -81,7 +81,7 @@ class RetrieveOnLine:
         self.datalines = []
         self.interval = interval
         self.SegmentData = []
-        for stk in stocklist:  # under change for the above reason
+        for stk in stocklist:    # under change for the above reason
             self.datalines.append({"name": stk, "price": [], "vol": []})
             # self.datalines.append({"name":stk, "price": np.array([]),\
             # "vol": np.array([])})
@@ -98,18 +98,18 @@ class RetrieveOnLine:
         if AtTransactionTime() in ["noon", "after"]:
             for task in self._sched.queue:
                 if task.time - time.time(
-                ) < 300:  # remove the am event from stack
+                ) < 300:    # remove the am event from stack
                     self._sched.cancel(task)
                     print(
                         "scheduled latest removed by Market Close!!,clean up ready,save2db !!"
                     )
-            return []  # think twice no need to return
+            return []    # think twice no need to return
         self._sched.enter(self.interval, 0, self.perform, (name, ))
         oneline = self.getStockData(name)
         if not oneline:
             print(
                 "Previous getting url sinaHq Errors! ,return 0 ,do nothing!!")
-            return 0  # will me ??
+            return 0    # will me ??
         # compose the data item
         data_item = [name] + oneline
         self.pw_save(data_item)
@@ -124,11 +124,11 @@ class RetrieveOnLine:
         # Below code should be observed if duetime past ,should executed immediately
         workAmTime = DueTime(9, 30)
         workPmTime = DueTime(13, 00)
-        j = 0  # delay counter
-        for stockcode in self.stocklist:  # improving below
-            self._sched.enterabs(workAmTime + 40 * j, 1, self.perform,
+        j = 0    # delay counter
+        for stockcode in self.stocklist:    # improving below
+            self._sched.enterabs(workAmTime + 10 * j, 1, self.perform,
                                  (stockcode, ))
-            self._sched.enterabs(workPmTime + 40 * j, 1, self.perform,
+            self._sched.enterabs(workPmTime + 10 * j, 1, self.perform,
                                  (stockcode, ))
             j += 1
 
@@ -146,7 +146,7 @@ class RetrieveOnLine:
         # from the url return data, retrive the data items
         # ,return the price List
         # reading realtime bidding info from sina
-        while True:  # if IOError wait 30seconds to retry
+        while True:    # if IOError wait 30seconds to retry
             try:
                 begin_t = time.time()
                 # print(HqString)
@@ -159,11 +159,16 @@ class RetrieveOnLine:
 
         hqList = str(hqList)
         hqList = hqList.split(',')
-        if len(hqList) != 33:
+        hq_length = len(hqList)
+        print(f"the initial String returned Length ==> {hq_length}")
+        if hq_length < 33:
             print(
                 "Length Error != 33 Hqlist is invalid!!!!!!!!!!! return 0  \n")
             print("Error List contains===>", hqList)
             return 0
+        else:
+            hqList = hqList[:32]
+
         # below code block show the data structure of the retrieved data
         todayOpen, yesClose, atTime = hqList[1], hqList[2],\
             hqList[31].split('"')[0]
@@ -174,7 +179,7 @@ class RetrieveOnLine:
         now_vol = float(tmpVol)
         # stkcode = stockCode[-6:]
         stkcode = stockCode
-        indx = self.stocklist.index(stkcode)  # list index by stock name
+        indx = self.stocklist.index(stkcode)    # list index by stock name
         assert self.datalines[indx]["name"] == stkcode
         self.datalines[indx]["price"].append(now_price)
         self.datalines[indx]["vol"].append(now_vol)
@@ -182,7 +187,7 @@ class RetrieveOnLine:
         return valList
 
     def pw_save(self, dt_item):
-        if len(dt_item) < 1:  # nothing in Array
+        if len(dt_item) < 1:    # nothing in Array
             print("Warning: Nothing in the received item !!")
             return
         stock, timestamp = dt_item[0], " ".join(dt_item[30:])
@@ -204,5 +209,5 @@ if __name__ == "__main__":
     stlist = cfg.get_section_value_list("monitored")
     print("ALL options will be read from URL ==> {}".format(stlist))
 
-    test_re = RetrieveOnLine(stlist, 50)
+    test_re = RetrieveOnLine(stlist, 30)
     test_re.realtimeDataTracking()
