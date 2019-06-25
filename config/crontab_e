@@ -1,0 +1,7 @@
+#crontab -e
+30 9 * * 1-5 source ~/bin/acquiringHQ.sh 
+30 9 * * 1-5 source ~/bin/sanicRest.sh
+*/20 * * * * date > ~/testcron.txt
+45 11 * * *  sudo ntpdate 1.cn.pool.ntp.org >> ~/testcron.txt
+
+
