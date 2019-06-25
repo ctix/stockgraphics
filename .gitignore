@@ -1,4 +1,5 @@
 *.pyc
+pw/*.pyc
 pw/*.db
 __pycache__/
 datum/
