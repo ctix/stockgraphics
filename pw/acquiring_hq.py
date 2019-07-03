@@ -97,8 +97,7 @@ class RetrieveOnLine:
         #  Transaction, while other hand in afterwards , shall end
         if AtTransactionTime() in ["noon", "after"]:
             for task in self._sched.queue:
-                if task.time - time.time(
-                ) < 300:    # remove the am event from stack
+                if task.time - time.time() < 270:    # remove the scheduled tasks from Queue
                     self._sched.cancel(task)
                     print(
                         "scheduled latest removed by Market Close!!,clean up ready,save2db !!"

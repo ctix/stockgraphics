@@ -46,10 +46,11 @@ app = Sanic(__name__)
 async def df_handler(request):
     # return json("HoW R U ,Now {}, \n start date,time ==> {}".format(now_dt, hq_st_dt))
     return html(""" <html> <title>Available exposed Restful API</title>
-            <P>Available exposed Restful API
+            <P> <h1>Available exposed Restful API
         <p>
+		<HR align=left width=300 color=#987cb9 SIZE=3>
         <p>
-            <p> http://ip_address/      ==> this help
+            <p> <h2> http://ip_address/      ==> this help
             <p> http://ip_address/hq/stockcode  ==> dataset 1 minuts ago
             <p> http://ip_address/today/stockcode
                         ==>dataset of the stock from today market open
