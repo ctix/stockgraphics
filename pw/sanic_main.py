@@ -1,27 +1,11 @@
-from peewee import SqliteDatabase, Model, \
-        IntegerField, CharField, TextField, DateTimeField
+#from peewee import SqliteDatabase, Model, \
+#        IntegerField, CharField, TextField, DateTimeField
+from peewee import *  ## fn.COUNT need it ???
 from datetime import datetime
 import time
 from sanic import Sanic
-from sanic.response import html,json
-
-db = SqliteDatabase("stocks.db")
-
-
-class BaseModel(Model):
-    class Meta:
-        database = db
-
-
-class Mins(BaseModel):
-    """new table for a concise field name"""
-    id = IntegerField()
-    stock = CharField(max_length=8)
-    detail = TextField()
-    dt = DateTimeField()
-
-    class Meta:
-        table_name = 'mins'
+from dataStruct  import Mins,Equities
+from sanic.response import html,json,text
 
 
 def get_hq_dt(type):
@@ -55,6 +39,7 @@ async def df_handler(request):
             <p> http://ip_address/today/stockcode
                         ==>dataset of the stock from today market open
             <p> http://ip_address/date/stockcode+date  ==> the history date data
+            <p> http://ip_address/stock_list  ==> recorded stock list 
             </html>""")
 
 
@@ -102,6 +87,31 @@ async def stock_his_handler(request, namedate):
         result_lst.append([it.detail, dt_str])
 
     return json(result_lst)
+
+# add the api for query the stock list
+@app.route("/stock_list")
+async def stock_list_handler(request):
+    result_lst = []
+    stklst = (Mins
+		.select(Mins.stock,fn.COUNT(Mins.id).alias("total"))
+		.group_by(Mins.stock)
+		.distinct()
+		)
+
+    for stk in stklst:
+        result_lst.append((stk.stock, stk.total))
+
+    return json(result_lst)
+
+# add the api for query the us stock list
+@app.route("/stock_list/us")
+async def stock_list_handler(request):
+    result_lst = []
+    stklst = Equities.select()
+    for stk in stklst:
+        result_lst.append((stk.cname, stk.code,stk.category))
+
+    return text(result_lst)
 
 
 app.run(host="0.0.0.0", port=8000, debug=True)

@@ -1,4 +1,4 @@
-from peewee import Model, SqliteDatabase, \
+from peewee import Model, SqliteDatabase, CompositeKey, \
     IntegerField, CharField, TextField, DateTimeField
 
 db = SqliteDatabase("stocks.db")
@@ -31,6 +31,15 @@ class Onem(BaseModel):
 
     class Meta:
         table_name = 'onem'
+
+
+class Equities(BaseModel):
+    cname = CharField()
+    code = CharField()
+    category = CharField()
+    class Meta:
+        table_name = 'equities'
+        primary_key=CompositeKey('code') #将code字段设置为主键
 
 
 if __name__ == "__main__":
