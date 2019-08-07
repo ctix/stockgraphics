@@ -3,9 +3,21 @@
 from peewee import *  ## fn.COUNT need it ???
 from datetime import datetime
 import time
-from sanic import Sanic
 from dataStruct  import Mins,Equities
-from sanic.response import html,json,text
+from accounts import User
+from sanic import Sanic
+from sanic_jwt import exceptions,initialize
+from sanic.response import html,json,text, redirect
+from sanic_jwt.decorators import protected
+
+
+import hashlib, uuid
+
+def _salt():
+    return uuid.uuid4().bytes
+
+def computed_password(salt, in_passwd):
+    return hashlib.sha512(in_passwd + salt).digest()
 
 
 def get_hq_dt(type):
@@ -22,11 +34,86 @@ def get_hq_dt(type):
         return datetime(dt.tm_year, dt.tm_mon, dt.tm_mday,
                         dt.tm_hour, dt.tm_min-1, dt.tm_sec, 0)
 
+def check_stored_auth(username, password):
+    """ find in sqlite user table for username user_id , hash 
+    password , and validating """
 
-app = Sanic(__name__)
+    try:   #if user doest exist ,then raise exceptions
+        user = User.get(User.username == username)
+    except:
+        # raise exceptions.AuthenticationFailed("User not found.")
+        return False
+
+    bytes_password = password.encode()    # encode to bytes array
+    hash_passwd = computed_password(user.salt,bytes_password)
+    #if password != user.password:
+    if hash_passwd != user.password:
+        # raise exceptions.AuthenticationFailed("Password is incorrect.")
+        return False
+    else:
+        return user
 
 
-@app.route("/")
+
+
+async def authenticate(request, *args, **kwargs):
+    username = request.json.get("username", None)
+    password = request.json.get("password", None)
+
+    if not username or not password:
+        raise exceptions.AuthenticationFailed("Missing username or password.")
+
+    auth_user = check_stored_auth(username,password)
+    if not auth_user:
+        raise exceptions.AuthenticationFailed("Error on User/password.")
+    else:
+        return  {"user_id": auth_user.id, "username": auth_user.username}
+
+
+
+app = Sanic()
+initialize(app, authenticate=authenticate)
+
+
+
+
+LOGIN_FORM = '''
+<h2>Please sign in, you can try:</h2>
+<dl>
+<dt>Username</dt> <dd>demo</dd>
+<dt>Password</dt> <dd>1234</dd>
+</dl>
+<p>{}</p>
+<form action="" method="POST">
+  <input class="username" id="name" name="username"
+    placeholder="username" type="text" value=""><br>
+  <input class="password" id="password" name="password"
+    placeholder="password" type="password" value=""><br>
+  <input id="submit" name="submit" type="submit" value="Sign In">
+</form>
+'''
+
+
+@app.route('/login', methods=['GET', 'POST'])
+async def login(request):
+    message = 'The Initial Login Page'
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+        # for demonstration purpose only, you should use more robust method
+        auth_user = check_stored_auth(username,password)
+        if not auth_user:
+            message = 'invalid username or password'
+            return html(LOGIN_FORM.format(message))
+        else:
+            return redirect('/about')
+    else:
+        return html(LOGIN_FORM.format(message))
+
+
+
+@app.route("/about")
+@protected
 async def df_handler(request):
     # return json("HoW R U ,Now {}, \n start date,time ==> {}".format(now_dt, hq_st_dt))
     return html(""" <html> <title>Available exposed Restful API</title>
@@ -114,4 +201,5 @@ async def stock_list_handler(request):
     return text(result_lst)
 
 
-app.run(host="0.0.0.0", port=8000, debug=True)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=8000, debug=True)
