@@ -3,6 +3,7 @@
 from peewee import *  ## fn.COUNT need it ???
 from datetime import datetime
 import time
+from pathlib import Path
 from dataStruct  import Mins,Equities
 from accounts import User
 from sanic import Sanic
@@ -55,7 +56,6 @@ def check_stored_auth(username, password):
 
 
 
-
 async def authenticate(request, *args, **kwargs):
     username = request.json.get("username", None)
     password = request.json.get("password", None)
@@ -76,7 +76,6 @@ initialize(app, authenticate=authenticate)
 
 
 
-
 LOGIN_FORM = '''
 <h2>Please sign in, you can try:</h2>
 <dl>
@@ -93,7 +92,6 @@ LOGIN_FORM = '''
 </form>
 '''
 
-
 @app.route('/login', methods=['GET', 'POST'])
 async def login(request):
     message = 'The Initial Login Page'
@@ -106,16 +104,24 @@ async def login(request):
             message = 'invalid username or password'
             return html(LOGIN_FORM.format(message))
         else:
-            return redirect('/about')
+            #return redirect('/about')
+            return redirect('/auth')
     else:
         return html(LOGIN_FORM.format(message))
 
 
+@app.route("/protected")
+@protected()
+async def protected_route(request):
+        return json({"protected": True})
 
+# testing the protected content,ensure accessibility after 
+# authentication
 @app.route("/about")
-@protected
+@protected()
 async def df_handler(request):
     # return json("HoW R U ,Now {}, \n start date,time ==> {}".format(now_dt, hq_st_dt))
+    #return json(""" <html> <title>Available exposed Restful API</title>
     return html(""" <html> <title>Available exposed Restful API</title>
             <P> <h1>Available exposed Restful API
         <p>
@@ -190,7 +196,7 @@ async def stock_list_handler(request):
 
     return json(result_lst)
 
-# add the api for query the us stock list
+# add the api for query the sino-us stock list
 @app.route("/stock_list/us")
 async def stock_list_handler(request):
     result_lst = []
@@ -200,6 +206,34 @@ async def stock_list_handler(request):
 
     return text(result_lst)
 
+#output the prediction of the specified security 
+@app.route("/predict/<name:[A-z0-9]+>")
+async def predict__handler(request, name):
+    result_lst = []
+    stklst = Equities.select()
+    for stk in stklst:
+        result_lst.append((stk.cname, stk.code,stk.category))
 
+    return json(result_lst)
+
+#get retrieving securities from finance yahoo 
+@app.route("/retrieve/<name:[A-z0-9]+>")
+async def retrieve_handler(request,name):
+    result_lst = []
+    stklst = Equities.select()
+    for stk in stklst:
+        result_lst.append((stk.cname, stk.code,stk.category))
+
+
+# Find out the wether or not the specfic model exists
+@app.route("/modelexistenct/<name:[A-z0-9]+>")
+async def find_model_handler(request,name):
+    model_path = "/home/ctix/Dev/models/"
+    modfile = Path(model_path+name)
+    return  json( modfile.exists())
+
+## TODO: add routes like "/ml/models/sid"
+## machine learning applying various algorithms on security id
+## May it be with parameters like predicting after number of days
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000, debug=True)
